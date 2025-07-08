@@ -93,8 +93,6 @@
 		mjpeg: true
 	});
 
-	// Version info
-	let versionInfo = $state<{ version?: string; config_path?: string }>({});
 
 	// Auto-refresh interval
 	let refreshInterval: number | undefined;
@@ -148,15 +146,6 @@
 		console.log(`Would delete stream: ${streamName}`);
 	}
 
-	async function loadVersionInfo() {
-		// TODO: Replace with actual API call
-		if (browser) {
-			versionInfo = {
-				version: '1.9.4',
-				config_path: '/config/go2rtc.yaml'
-			};
-		}
-	}
 
 	async function refreshStreams() {
 		// TODO: Replace with actual API call to refresh stream data
@@ -164,7 +153,6 @@
 	}
 
 	onMount(() => {
-		loadVersionInfo();
 		refreshStreams();
 		// Auto-refresh every second
 		refreshInterval = window.setInterval(refreshStreams, 1000);
@@ -178,14 +166,7 @@
 </script>
 
 <div class="space-y-4">
-	{#if versionInfo.version}
-		<div class="text-muted-foreground text-sm">
-			Version: {versionInfo.version}, Config: {versionInfo.config_path}
-		</div>
-	{/if}
-
 	<div class="flex flex-wrap items-center justify-between gap-4">
-		<h1 class="text-2xl font-bold">Streams</h1>
 
 		<div class="flex flex-wrap items-center gap-4">
 			{#if selectedStreams.size > 0}
