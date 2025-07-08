@@ -5,6 +5,7 @@
 	import { theme, resolvedTheme } from '$lib/stores/theme';
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
+	import { goto } from '$app/navigation';
 	import { Button } from '$lib/components/ui/button';
 	import { Switch } from '$lib/components/ui/switch';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
@@ -18,8 +19,35 @@
 		config_path: '/config/go2rtc.yaml'
 	});
 
+	// Platform-aware modifier key display
+	let modifierKey = $state('⌘');
+
+	function detectPlatform() {
+		if (typeof navigator !== 'undefined') {
+			const platform = navigator.platform.toLowerCase();
+			modifierKey = platform.includes('mac') ? '⌘' : 'Ctrl';
+		}
+	}
+
 	onMount(() => {
 		theme.init();
+		detectPlatform();
+
+		// Keyboard shortcut handler for Cmd/Ctrl+Plus (add stream)
+		function handleKeydown(e: KeyboardEvent) {
+			// Check for Cmd+Plus (Mac) or Ctrl+Plus (Windows/Linux)
+			// Handle both '+' key and Shift+= combination that produces '+'
+			if ((e.metaKey || e.ctrlKey) && (e.key === '+' || (e.key === '=' && e.shiftKey))) {
+				e.preventDefault();
+				goto('/add');
+			}
+		}
+
+		document.addEventListener('keydown', handleKeydown);
+
+		return () => {
+			document.removeEventListener('keydown', handleKeydown);
+		};
 	});
 
 	function handleThemeToggle() {
@@ -80,9 +108,20 @@
 					</div>
 
 					<div class="flex items-center gap-3">
-						<!-- Add Stream Button -->
-						<Button variant="outline" size="sm">
-							<a href="/add" class="text-inherit no-underline">Add Stream</a>
+						<!-- Add Stream Button with keyboard shortcut -->
+						<Button 
+							variant="outline" 
+							size="sm" 
+							onclick={() => goto('/add')}
+							aria-label="Add Stream (Keyboard shortcut: {modifierKey}+Plus)"
+							title="Add Stream ({modifierKey}+Plus)"
+						>
+							<span class="flex items-center gap-2">
+								Add Stream
+								<kbd class="bg-muted text-muted-foreground pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border px-1.5 font-mono text-[10px] font-medium opacity-100">
+									<span class="text-xs">{modifierKey}</span>+
+								</kbd>
+							</span>
 						</Button>
 
 						<!-- Version Info Dropdown -->

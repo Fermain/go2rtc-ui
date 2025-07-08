@@ -118,19 +118,18 @@
 
 <div class="relative h-[calc(100vh-8rem)]">
 	{#if isLoading && !isInitialized}
-		<div class="absolute inset-0 flex items-center justify-center bg-background/50">
-			<div class="text-sm text-muted-foreground">Loading network...</div>
+		<div class="bg-background/50 absolute inset-0 flex items-center justify-center">
+			<div class="text-muted-foreground text-sm">Loading network...</div>
 		</div>
 	{/if}
-	
+
 	{#if errorMessage}
-		<div class="absolute top-4 left-4 right-4 z-10">
+		<div class="absolute top-4 right-4 left-4 z-10">
 			<Alert variant="destructive">
 				<AlertDescription>{errorMessage}</AlertDescription>
 			</Alert>
 		</div>
 	{/if}
-
 
 	<div bind:this={networkContainer} class="h-full w-full" />
 </div>
@@ -151,4 +150,4 @@
 	:global(.dark .vis-network) {
 		background-color: hsl(var(--background)) !important;
 	}
-</style> 
+</style>

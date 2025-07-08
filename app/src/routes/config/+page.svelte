@@ -11,55 +11,28 @@
 	let errorMessage = '';
 	let successMessage = '';
 	let isSaving = false;
+	let configPath = 'Configuration';
+
+	async function loadAppInfo() {
+		try {
+			const response = await fetch('/api', { cache: 'no-cache' });
+			if (response.ok) {
+				const appInfo = await response.json();
+				configPath = appInfo.config_path || 'Configuration';
+			}
+		} catch (error) {
+			console.error('Failed to load app info:', error);
+		}
+	}
 
 	async function loadConfig() {
 		try {
 			isLoading = true;
 			errorMessage = '';
 
-			// TODO: Replace with actual API call when backend is available
-			// For now, simulate loading with dummy data
-			if (browser) {
-				// Simulate API response
-				await new Promise((resolve) => setTimeout(resolve, 500));
-
-				// Dummy YAML config for development
-				const dummyConfig = `api:
-  listen: :1984
-dlna:
-  listen: :1985
-ffmpeg:
-  bin: /nix/store/fbhsn9gqpq7g7gw8parsjd6sb487n6xy-ffmpeg-headless-7.1.1-bin/bin/ffmpeg
-hls:
-  listen: :8888
-log:
-  format: text
-  level: info
-rtsp:
-  listen: :8554
-streams:
-  dvr_channel_1: dvrip://admin:1234567890@192.168.0.203?channel=0
-  dvr_channel_2: dvrip://admin:1234567890@192.168.0.203?channel=1
-  dvr_channel_3: dvrip://admin:1234567890@192.168.0.203?channel=2
-  dvr_channel_4: dvrip://admin:1234567890@192.168.0.203?channel=3
-webrtc:
-  ice_servers:
-  - urls:
-    - stun:stun.l.google.com:19302
-  listen: :8555`;
-
-				originalConfig = dummyConfig;
-				if (editor) {
-					editor.dispatch({
-						changes: { from: 0, to: editor.state.doc.length, insert: dummyConfig }
-					});
-				}
-			}
-
-			// Original implementation when backend is available:
-			/*
+			// Make real API call to get configuration
 			const response = await fetch('/api/config', { cache: 'no-cache' });
-			
+
 			if (response.status === 410) {
 				errorMessage = 'Config file is not set';
 				if (editor) {
@@ -85,7 +58,6 @@ webrtc:
 			} else {
 				errorMessage = `Unknown error: ${response.statusText} (${response.status})`;
 			}
-			*/
 		} catch (error) {
 			errorMessage = `Failed to load config: ${error}`;
 		} finally {
@@ -101,27 +73,11 @@ webrtc:
 			errorMessage = '';
 			successMessage = '';
 
-			// TODO: Replace with actual API calls when backend is available
-			// For now, simulate save operation
-			if (browser) {
-				// Simulate save delay
-				await new Promise((resolve) => setTimeout(resolve, 1000));
-
-				successMessage = 'Config saved successfully';
-				originalConfig = editor.state.doc.toString();
-
-				// Clear success message after 3 seconds
-				setTimeout(() => {
-					successMessage = '';
-				}, 3000);
-			}
-
-			// Original implementation when backend is available:
-			/*
 			// Check if config was changed elsewhere
 			const checkResponse = await fetch('/api/config', { cache: 'no-cache' });
-			if (checkResponse.ok && originalConfig !== await checkResponse.text()) {
-				errorMessage = 'Config was changed from another place. Refresh the page and make changes again';
+			if (checkResponse.ok && originalConfig !== (await checkResponse.text())) {
+				errorMessage =
+					'Config was changed from another place. Refresh the page and make changes again';
 				return;
 			}
 
@@ -134,13 +90,17 @@ webrtc:
 			if (saveResponse.ok) {
 				successMessage = 'Config saved successfully';
 				originalConfig = editor.state.doc.toString();
-				
+
 				// Restart the service
 				await fetch('/api/restart', { method: 'POST' });
+
+				// Clear success message after 3 seconds
+				setTimeout(() => {
+					successMessage = '';
+				}, 3000);
 			} else {
 				errorMessage = await saveResponse.text();
 			}
-			*/
 		} catch (error) {
 			errorMessage = `Failed to save config: ${error}`;
 		} finally {
@@ -150,6 +110,9 @@ webrtc:
 
 	onMount(() => {
 		if (!browser) return;
+
+		// Load app info first to get config path
+		loadAppInfo();
 
 		// Keyboard shortcut handler
 		function handleKeydown(e: KeyboardEvent) {
@@ -229,8 +192,8 @@ webrtc:
 
 <div class="flex h-full flex-col space-y-4">
 	<div class="flex items-center justify-between">
-		<h1 class="text-2xl font-bold">Configuration</h1>
-		<Button onclick={saveConfig} disabled={isSaving || isLoading} class="min-w-40">
+		<h1 class="text-2xl font-bold">{configPath}</h1>
+		<Button size="sm" onclick={saveConfig} disabled={isSaving || isLoading}>
 			{isSaving ? 'Saving...' : 'Save & Restart'}
 			{#if !isSaving && !isLoading}
 				<span class="ml-2 text-xs opacity-60">⌘S</span>
@@ -264,10 +227,5 @@ webrtc:
 			class="h-full w-full overflow-hidden"
 			style="display: flex; flex-direction: column;"
 		></div>
-	</div>
-
-	<div class="text-muted-foreground text-sm">
-		<p>Edit the YAML configuration above and click "Save & Restart" to apply changes.</p>
-		<p>The service will automatically restart after saving.</p>
 	</div>
 </div>

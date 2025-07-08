@@ -23,62 +23,8 @@
 	let autoUpdate = $state(true);
 	let reverseOrder = $state(false);
 	let refreshInterval: number | undefined;
-
-	// Generate dummy logs for development
-	const dummyLogs = [
-		{
-			time: new Date().toISOString(),
-			level: 'info',
-			message: 'Starting go2rtc server',
-			version: '1.9.4'
-		},
-		{
-			time: new Date(Date.now() - 1000).toISOString(),
-			level: 'debug',
-			message: 'Loading configuration',
-			path: '/config/go2rtc.yaml'
-		},
-		{
-			time: new Date(Date.now() - 2000).toISOString(),
-			level: 'info',
-			message: 'WebRTC server listening',
-			port: 8555
-		},
-		{
-			time: new Date(Date.now() - 3000).toISOString(),
-			level: 'info',
-			message: 'RTSP server listening',
-			port: 8554
-		},
-		{
-			time: new Date(Date.now() - 4000).toISOString(),
-			level: 'warn',
-			message: 'Stream connection timeout, retrying...',
-			stream: 'dvr_channel_1',
-			attempt: 2
-		},
-		{
-			time: new Date(Date.now() - 5000).toISOString(),
-			level: 'error',
-			message: 'Failed to connect to stream',
-			stream: 'dvr_channel_4',
-			error: 'connection refused'
-		},
-		{
-			time: new Date(Date.now() - 6000).toISOString(),
-			level: 'debug',
-			message: 'Consumer connected via WebRTC',
-			stream: 'dvr_channel_1',
-			remote_addr: '192.168.1.50:51234'
-		},
-		{
-			time: new Date(Date.now() - 7000).toISOString(),
-			level: 'trace',
-			message: 'Processing frame',
-			stream: 'dvr_channel_1',
-			frame_type: 'video'
-		}
-	];
+	let isLoading = $state(false);
+	let error: string | null = $state(null);
 
 	function formatTime(isoString: string): string {
 		const date = new Date(isoString);
@@ -115,63 +61,99 @@
 	}
 
 	async function loadLogs() {
+		if (!browser) return;
+
 		try {
-			// TODO: Replace with actual API call when backend is available
-			// For now, use dummy data
-			if (browser) {
-				const processedLogs = dummyLogs.map((log) => ({
-					...log,
-					time: log.time,
-					level: log.level,
-					message: formatMessage(log)
-				}));
+			isLoading = true;
+			error = null;
 
-				logs = reverseOrder ? processedLogs.reverse() : processedLogs;
-			}
-
-			// Original implementation when backend is available:
-			/*
-			const response = await fetch('/api/log', { cache: 'no-cache' });
-			if (response.ok) {
-				const data = await response.text();
-				const jsonLines = '[' + data.trimEnd().replaceAll('\n', ',') + ']';
-				let parsedLogs = JSON.parse(jsonLines);
-				
-				if (reverseOrder) {
-					parsedLogs = parsedLogs.reverse();
+			const response = await fetch('/api/log', {
+				cache: 'no-cache',
+				headers: {
+					Accept: 'application/json, text/plain, */*'
 				}
-				
-				logs = parsedLogs.map(log => ({
-					...log,
-					message: formatMessage(log)
-				}));
+			});
+
+			if (!response.ok) {
+				throw new Error(`HTTP ${response.status}: ${response.statusText}`);
 			}
-			*/
-		} catch (error) {
-			console.error('Failed to load logs:', error);
+
+			// Handle text response (newline-delimited JSON)
+			const textData = await response.text();
+			let parsedLogs: LogEntry[] = [];
+
+			if (textData.trim()) {
+				const lines = textData.trim().split('\n');
+				parsedLogs = lines
+					.filter((line) => line.trim())
+					.map((line) => {
+						try {
+							return JSON.parse(line);
+						} catch (e) {
+							// If line is not valid JSON, treat as plain text log
+							return {
+								time: new Date().toISOString(),
+								level: 'info',
+								message: line,
+								raw: true
+							};
+						}
+					});
+			}
+
+			// Process and format logs
+			const processedLogs = parsedLogs.map((log) => ({
+				...log,
+				time: log.time || new Date().toISOString(),
+				level: log.level || 'info',
+				message: log.raw ? log.message : formatMessage(log)
+			}));
+
+			// Apply reverse order if enabled
+			logs = reverseOrder ? processedLogs.reverse() : processedLogs;
+
+			// Clear any previous error on successful load
+			error = null;
+		} catch (err) {
+			console.error('Failed to load logs:', err);
+			error = err instanceof Error ? err.message : 'Failed to load logs';
+		} finally {
+			isLoading = false;
 		}
 	}
 
 	async function clearLogs() {
+		if (!browser) return;
+
 		try {
-			// TODO: Replace with actual API call when backend is available
-			if (browser) {
-				logs = [];
-				// Simulate success
-				alert('Logs cleared successfully');
+			isLoading = true;
+			error = null;
+
+			const response = await fetch('/api/log', {
+				method: 'DELETE',
+				headers: {
+					Accept: 'application/json, text/plain, */*'
+				}
+			});
+
+			if (!response.ok) {
+				throw new Error(`HTTP ${response.status}: ${response.statusText}`);
 			}
 
-			// Original implementation when backend is available:
-			/*
-			const response = await fetch('/api/log', { method: 'DELETE' });
-			if (response.ok) {
-				await loadLogs();
-			}
-			alert(await response.text());
-			*/
-		} catch (error) {
-			console.error('Failed to clear logs:', error);
-			alert('Failed to clear logs');
+			// Clear logs locally and reload
+			logs = [];
+			await loadLogs();
+
+			// Show success message
+			const message = await response.text().catch(() => 'Logs cleared successfully');
+			alert(message || 'Logs cleared successfully');
+		} catch (err) {
+			console.error('Failed to clear logs:', err);
+			const errorMessage = err instanceof Error ? err.message : 'Failed to clear logs';
+			error = errorMessage;
+			alert(errorMessage);
+		} finally {
+			isLoading = false;
 		}
 	}
 
@@ -184,12 +166,17 @@
 		loadLogs(); // Reload to apply new order
 	}
 
+	function retryLoad() {
+		error = null;
+		loadLogs();
+	}
+
 	onMount(() => {
 		loadLogs();
 
 		// Auto-refresh every 5 seconds
 		refreshInterval = window.setInterval(() => {
-			if (autoUpdate) {
+			if (autoUpdate && !isLoading) {
 				loadLogs();
 			}
 		}, 5000);
@@ -226,14 +213,35 @@
 <div class="space-y-4">
 	<div class="flex flex-wrap items-center justify-between gap-4">
 		<div class="flex items-center gap-2">
-			<Button size="sm" variant="outline" onclick={clearLogs}>Clean</Button>
+			<Button size="sm" variant="outline" onclick={clearLogs} disabled={isLoading}>
+				{isLoading ? 'Loading...' : 'Clean'}
+			</Button>
 			<Button size="sm" variant="outline" onclick={toggleAutoUpdate}>
 				Auto Update: {autoUpdate ? 'ON' : 'OFF'}
 			</Button>
 			<Button size="sm" variant="outline" onclick={toggleReverseOrder}>
 				Reverse Log Order: {reverseOrder ? 'ON' : 'OFF'}
 			</Button>
+			<Button size="sm" variant="outline" onclick={loadLogs} disabled={isLoading}>
+				{isLoading ? 'Refreshing...' : 'Refresh'}
+			</Button>
 		</div>
+		{#if error}
+			<div
+				class="text-destructive bg-destructive/10 flex items-center gap-2 rounded px-2 py-1 text-xs"
+			>
+				<span>{error}</span>
+				<Button
+					size="sm"
+					variant="ghost"
+					onclick={retryLoad}
+					disabled={isLoading}
+					class="h-6 px-2 text-xs"
+				>
+					Retry
+				</Button>
+			</div>
+		{/if}
 	</div>
 
 	<div class="rounded-md border">
@@ -246,21 +254,35 @@
 				</TableRow>
 			</TableHeader>
 			<TableBody>
-				{#each logs as log}
-					<TableRow class={log.level}>
-						<TableCell class="align-top font-mono text-xs">
-							{formatTime(log.time)}
-						</TableCell>
-						<TableCell class="align-top text-xs">
-							<Badge variant={getLevelVariant(log.level)}>
-								{log.level}
-							</Badge>
-						</TableCell>
-						<TableCell class="align-top font-mono text-xs whitespace-pre-wrap">
-							{@html log.message.replace(/\n/g, '<br>')}
+				{#if isLoading && logs.length === 0}
+					<TableRow>
+						<TableCell colspan="3" class="py-8 text-center text-gray-500">
+							Loading logs...
 						</TableCell>
 					</TableRow>
-				{/each}
+				{:else if logs.length === 0}
+					<TableRow>
+						<TableCell colspan="3" class="py-8 text-center text-gray-500">
+							No logs available
+						</TableCell>
+					</TableRow>
+				{:else}
+					{#each logs as log}
+						<TableRow class={log.level}>
+							<TableCell class="align-top font-mono text-xs">
+								{formatTime(log.time)}
+							</TableCell>
+							<TableCell class="align-top text-xs">
+								<Badge variant={getLevelVariant(log.level)}>
+									{log.level}
+								</Badge>
+							</TableCell>
+							<TableCell class="align-top font-mono text-xs whitespace-pre-wrap">
+								{@html log.message.replace(/\n/g, '<br>')}
+							</TableCell>
+						</TableRow>
+					{/each}
+				{/if}
 			</TableBody>
 		</Table>
 	</div>

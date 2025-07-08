@@ -13,76 +13,46 @@
 	import { onMount, onDestroy } from 'svelte';
 	import { browser } from '$app/environment';
 
-	// Dummy data for streams
-	const dummyStreams = [
-		{
-			name: 'camera.front_door',
-			info: {
-				producers: [
-					{
-						url: 'rtsp://192.168.1.100:554/stream1',
-						format: 'rtsp',
-						remote_addr: '192.168.1.100:554',
-						user_agent: 'ffmpeg/go2rtc',
-						recv: 1234567,
-						send: 0
-					}
-				],
-				consumers: [
-					{
-						url: 'webrtc',
-						format: 'webrtc',
-						remote_addr: '192.168.1.50:51234',
-						user_agent: 'Mozilla/5.0',
-						recv: 0,
-						send: 987654
-					},
-					{
-						url: 'rtsp',
-						format: 'rtsp',
-						remote_addr: '192.168.1.51:45678',
-						user_agent: 'VLC/3.0.18',
-						recv: 0,
-						send: 456789
-					}
-				]
-			},
-			status: 'online'
-		},
-		{
-			name: 'camera.garage',
-			info: {
-				producers: [
-					{
-						url: 'rtsp://192.168.1.101:554/stream1',
-						format: 'rtsp',
-						remote_addr: '192.168.1.101:554',
-						user_agent: 'ffmpeg/go2rtc',
-						recv: 2345678,
-						send: 0
-					}
-				],
-				consumers: []
-			},
-			status: 'online'
-		},
-		{
-			name: 'camera.backyard',
-			info: {
-				producers: [],
-				consumers: []
-			},
-			status: 'offline'
-		}
-	];
+	// Types for stream data
+	interface StreamProducer {
+		url: string;
+		format?: string;
+		remote_addr?: string;
+		user_agent?: string;
+		recv?: number;
+		send?: number;
+	}
+
+	interface StreamConsumer {
+		url: string;
+		format?: string;
+		remote_addr?: string;
+		user_agent?: string;
+		recv?: number;
+		send?: number;
+	}
+
+	interface StreamInfo {
+		producers: StreamProducer[];
+		consumers: StreamConsumer[];
+	}
+
+	interface Stream {
+		name: string;
+		info: StreamInfo;
+		status: 'online' | 'offline';
+	}
+
+	// Stream data state
+	let streams = $state<Stream[]>([]);
+	let isLoading = $state(false);
+	let error = $state<string | null>(null);
 
 	// Selection state
 	let selectedStreams = $state<Set<string>>(new Set());
-	let isAllSelected = $derived(
-		selectedStreams.size === dummyStreams.length && dummyStreams.length > 0
-	);
+	let isAllSelected = $derived(selectedStreams.size === streams.length && streams.length > 0);
 	let isPartiallySelected = $derived(
-		selectedStreams.size > 0 && selectedStreams.size < dummyStreams.length
+		selectedStreams.size > 0 && selectedStreams.size < streams.length
 	);
 
 	// Mode selection state
@@ -93,15 +63,16 @@
 		mjpeg: true
 	});
 
-
 	// Auto-refresh interval
 	let refreshInterval: number | undefined;
+	let refreshAttempts = 0;
+	const maxRefreshAttempts = 5;
 
 	function toggleAllSelection() {
 		if (isAllSelected) {
 			selectedStreams = new Set();
 		} else {
-			selectedStreams = new Set(dummyStreams.map((s) => s.name));
+			selectedStreams = new Set(streams.map((s) => s.name));
 		}
 	}
 
@@ -146,10 +117,63 @@
 		console.log(`Would delete stream: ${streamName}`);
 	}
 
+	async function refreshStreams(isManual = false) {
+		if (!browser) return;
 
-	async function refreshStreams() {
-		// TODO: Replace with actual API call to refresh stream data
-		console.log('Refreshing streams...');
+		// Don't show loading for auto-refresh unless it's the first load
+		if (isManual || streams.length === 0) {
+			isLoading = true;
+		}
+
+		if (isManual) {
+			error = null;
+			refreshAttempts = 0;
+		}
+
+		try {
+			const response = await fetch('/api/streams');
+			if (!response.ok) {
+				throw new Error(`HTTP error! status: ${response.status}`);
+			}
+
+			const data = await response.json();
+
+			// Transform the go2rtc response format to our internal format
+			const transformedStreams: Stream[] = Object.entries(data).map(([name, info]) => {
+				const streamInfo = info as StreamInfo;
+				const hasProducers = streamInfo.producers && streamInfo.producers.length > 0;
+				const hasConsumers = streamInfo.consumers && streamInfo.consumers.length > 0;
+
+				return {
+					name,
+					info: {
+						producers: streamInfo.producers || [],
+						consumers: streamInfo.consumers || []
+					},
+					status: hasProducers ? 'online' : 'offline'
+				};
+			});
+
+			streams = transformedStreams;
+			refreshAttempts = 0; // Reset attempts on success
+
+			// Clear any previous error
+			if (error) {
+				error = null;
+			}
+		} catch (err) {
+			refreshAttempts++;
+			const errorMessage = err instanceof Error ? err.message : 'Failed to fetch streams';
+
+			// Only show error if manual refresh or if we've exceeded max attempts
+			if (isManual || refreshAttempts >= maxRefreshAttempts) {
+				error = errorMessage;
+			}
+
+			console.error('Error fetching streams:', err);
+		} finally {
+			isLoading = false;
+		}
 	}
 
 	onMount(() => {
@@ -167,7 +191,6 @@
 
 <div class="space-y-4">
 	<div class="flex flex-wrap items-center justify-between gap-4">
-
 		<div class="flex flex-wrap items-center gap-4">
 			{#if selectedStreams.size > 0}
 				<Button size="sm" variant="default" onclick={viewSelected}>Stream</Button>
@@ -194,6 +217,15 @@
 				<span class="text-muted-foreground text-sm">{selectedStreams.size} selected</span>
 			{/if}
 		</div>
+
+		<div class="flex items-center gap-2">
+			<Button size="sm" variant="outline" onclick={() => refreshStreams(true)} disabled={isLoading}>
+				{isLoading ? 'Refreshing...' : 'Refresh'}
+			</Button>
+			{#if error}
+				<span class="text-sm text-red-600">Connection error</span>
+			{/if}
+		</div>
 	</div>
 
 	<div class="rounded-md border">
@@ -214,63 +246,99 @@
 				</TableRow>
 			</TableHeader>
 			<TableBody>
-				{#each dummyStreams as stream}
+				{#if isLoading}
 					<TableRow>
-						<TableCell>
-							<Checkbox
-								checked={selectedStreams.has(stream.name)}
-								onCheckedChange={() => toggleStreamSelection(stream.name)}
-								aria-label={`Select ${stream.name}`}
-							/>
-						</TableCell>
-						<TableCell class="font-medium">{stream.name}</TableCell>
-						<TableCell>
-							<div class="flex items-center gap-1 text-sm">
-								<a
-									href="/api/streams?src={encodeURIComponent(stream.name)}"
-									class="hover:underline"
-								>
-									{stream.info.consumers.length} / info
-								</a>
-								<span>/</span>
-								<a
-									href="/api/streams?src={encodeURIComponent(
-										stream.name
-									)}&video=all&audio=all&microphone"
-									class="hover:underline"
-								>
-									probe
-								</a>
-								<span>/</span>
-								<a href="/network?src={encodeURIComponent(stream.name)}" class="hover:underline">
-									net
-								</a>
-							</div>
-						</TableCell>
-						<TableCell>
-							<div class="flex items-center gap-2">
-								<a
-									href="/stream?src={encodeURIComponent(stream.name)}"
-									class="text-sm hover:underline"
-								>
-									stream
-								</a>
-								<a
-									href="/links?src={encodeURIComponent(stream.name)}"
-									class="text-sm hover:underline"
-								>
-									links
-								</a>
-								<button
-									onclick={() => deleteStream(stream.name)}
-									class="text-destructive text-sm hover:underline"
-								>
-									delete
-								</button>
+						<TableCell colspan="4" class="py-8 text-center">
+							<div class="flex items-center justify-center gap-2">
+								<div
+									class="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600"
+								></div>
+								Loading streams...
 							</div>
 						</TableCell>
 					</TableRow>
-				{/each}
+				{:else if error}
+					<TableRow>
+						<TableCell colspan="4" class="py-8 text-center">
+							<div class="text-red-600">
+								<p class="font-medium">Error loading streams</p>
+								<p class="mt-1 text-sm">{error}</p>
+								<Button
+									size="sm"
+									variant="outline"
+									class="mt-2"
+									onclick={() => refreshStreams(true)}
+								>
+									Retry
+								</Button>
+							</div>
+						</TableCell>
+					</TableRow>
+				{:else if streams.length === 0}
+					<TableRow>
+						<TableCell colspan="4" class="text-muted-foreground py-8 text-center">
+							No streams configured
+						</TableCell>
+					</TableRow>
+				{:else}
+					{#each streams as stream}
+						<TableRow>
+							<TableCell>
+								<Checkbox
+									checked={selectedStreams.has(stream.name)}
+									onCheckedChange={() => toggleStreamSelection(stream.name)}
+									aria-label={`Select ${stream.name}`}
+								/>
+							</TableCell>
+							<TableCell class="font-medium">{stream.name}</TableCell>
+							<TableCell>
+								<div class="flex items-center gap-1 text-sm">
+									<a
+										href="/api/streams?src={encodeURIComponent(stream.name)}"
+										class="hover:underline"
+									>
+										{stream.info.consumers.length} / info
+									</a>
+									<span>/</span>
+									<a
+										href="/api/streams?src={encodeURIComponent(
+											stream.name
+										)}&video=all&audio=all&microphone"
+										class="hover:underline"
+									>
+										probe
+									</a>
+									<span>/</span>
+									<a href="/network?src={encodeURIComponent(stream.name)}" class="hover:underline">
+										net
+									</a>
+								</div>
+							</TableCell>
+							<TableCell>
+								<div class="flex items-center gap-2">
+									<a
+										href="/stream?src={encodeURIComponent(stream.name)}"
+										class="text-sm hover:underline"
+									>
+										stream
+									</a>
+									<a
+										href="/links?src={encodeURIComponent(stream.name)}"
+										class="text-sm hover:underline"
+									>
+										links
+									</a>
+									<button
+										onclick={() => deleteStream(stream.name)}
+										class="text-destructive text-sm hover:underline"
+									>
+										delete
+									</button>
+								</div>
+							</TableCell>
+						</TableRow>
+					{/each}
+				{/if}
 			</TableBody>
 		</Table>
 	</div>
