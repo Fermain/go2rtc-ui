@@ -1,5 +1,12 @@
 <script lang="ts">
-	import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '$lib/components/ui/table';
+	import {
+		Table,
+		TableBody,
+		TableCell,
+		TableHead,
+		TableHeader,
+		TableRow
+	} from '$lib/components/ui/table';
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
 	import { Checkbox } from '$lib/components/ui/checkbox';
@@ -12,11 +19,32 @@
 			name: 'camera.front_door',
 			info: {
 				producers: [
-					{ url: 'rtsp://192.168.1.100:554/stream1', format: 'rtsp', remote_addr: '192.168.1.100:554', user_agent: 'ffmpeg/go2rtc', recv: 1234567, send: 0 }
+					{
+						url: 'rtsp://192.168.1.100:554/stream1',
+						format: 'rtsp',
+						remote_addr: '192.168.1.100:554',
+						user_agent: 'ffmpeg/go2rtc',
+						recv: 1234567,
+						send: 0
+					}
 				],
 				consumers: [
-					{ url: 'webrtc', format: 'webrtc', remote_addr: '192.168.1.50:51234', user_agent: 'Mozilla/5.0', recv: 0, send: 987654 },
-					{ url: 'rtsp', format: 'rtsp', remote_addr: '192.168.1.51:45678', user_agent: 'VLC/3.0.18', recv: 0, send: 456789 }
+					{
+						url: 'webrtc',
+						format: 'webrtc',
+						remote_addr: '192.168.1.50:51234',
+						user_agent: 'Mozilla/5.0',
+						recv: 0,
+						send: 987654
+					},
+					{
+						url: 'rtsp',
+						format: 'rtsp',
+						remote_addr: '192.168.1.51:45678',
+						user_agent: 'VLC/3.0.18',
+						recv: 0,
+						send: 456789
+					}
 				]
 			},
 			status: 'online'
@@ -25,7 +53,14 @@
 			name: 'camera.garage',
 			info: {
 				producers: [
-					{ url: 'rtsp://192.168.1.101:554/stream1', format: 'rtsp', remote_addr: '192.168.1.101:554', user_agent: 'ffmpeg/go2rtc', recv: 2345678, send: 0 }
+					{
+						url: 'rtsp://192.168.1.101:554/stream1',
+						format: 'rtsp',
+						remote_addr: '192.168.1.101:554',
+						user_agent: 'ffmpeg/go2rtc',
+						recv: 2345678,
+						send: 0
+					}
 				],
 				consumers: []
 			},
@@ -43,8 +78,12 @@
 
 	// Selection state
 	let selectedStreams = $state<Set<string>>(new Set());
-	let isAllSelected = $derived(selectedStreams.size === dummyStreams.length && dummyStreams.length > 0);
-	let isPartiallySelected = $derived(selectedStreams.size > 0 && selectedStreams.size < dummyStreams.length);
+	let isAllSelected = $derived(
+		selectedStreams.size === dummyStreams.length && dummyStreams.length > 0
+	);
+	let isPartiallySelected = $derived(
+		selectedStreams.size > 0 && selectedStreams.size < dummyStreams.length
+	);
 
 	// Mode selection state
 	let modes = $state({
@@ -64,7 +103,7 @@
 		if (isAllSelected) {
 			selectedStreams = new Set();
 		} else {
-			selectedStreams = new Set(dummyStreams.map(s => s.name));
+			selectedStreams = new Set(dummyStreams.map((s) => s.name));
 		}
 	}
 
@@ -77,29 +116,29 @@
 		}
 		selectedStreams = newSelection;
 	}
-	
+
 	function viewSelected() {
 		if (selectedStreams.size === 0) return;
-		
+
 		const url = new URL('/streams', window.location.href);
-		selectedStreams.forEach(stream => {
+		selectedStreams.forEach((stream) => {
 			url.searchParams.append('src', stream);
 		});
-		
+
 		// Add selected modes
 		const selectedModes = Object.entries(modes)
 			.filter(([_, enabled]) => enabled)
 			.map(([mode]) => mode)
 			.join(',');
 		url.searchParams.set('mode', selectedModes);
-		
+
 		window.location.href = url.toString();
 	}
 
 	async function deleteStream(streamName: string) {
 		const message = `Please type the name of the stream "${streamName}" to confirm its deletion from the configuration. This action is irreversible.`;
 		const confirmation = prompt(message);
-		
+
 		if (confirmation !== streamName) {
 			alert('Stream name does not match. Deletion cancelled.');
 			return;
@@ -140,18 +179,18 @@
 
 <div class="space-y-4">
 	{#if versionInfo.version}
-		<div class="text-sm text-muted-foreground">
+		<div class="text-muted-foreground text-sm">
 			Version: {versionInfo.version}, Config: {versionInfo.config_path}
 		</div>
 	{/if}
-	
-	<div class="flex items-center justify-between flex-wrap gap-4">
+
+	<div class="flex flex-wrap items-center justify-between gap-4">
 		<h1 class="text-2xl font-bold">Streams</h1>
-		
-		<div class="flex items-center gap-4 flex-wrap">
+
+		<div class="flex flex-wrap items-center gap-4">
 			{#if selectedStreams.size > 0}
 				<Button size="sm" variant="default" onclick={viewSelected}>Stream</Button>
-				
+
 				<div class="flex items-center gap-2">
 					<label class="flex items-center gap-1 text-sm">
 						<Checkbox bind:checked={modes.webrtc} />
@@ -170,18 +209,18 @@
 						mjpeg
 					</label>
 				</div>
-				
-				<span class="text-sm text-muted-foreground">{selectedStreams.size} selected</span>
+
+				<span class="text-muted-foreground text-sm">{selectedStreams.size} selected</span>
 			{/if}
 		</div>
 	</div>
-	
+
 	<div class="rounded-md border">
 		<Table>
 			<TableHeader>
 				<TableRow>
 					<TableHead class="w-12">
-						<Checkbox 
+						<Checkbox
 							checked={isAllSelected}
 							indeterminate={isPartiallySelected}
 							onCheckedChange={toggleAllSelection}
@@ -197,7 +236,7 @@
 				{#each dummyStreams as stream}
 					<TableRow>
 						<TableCell>
-							<Checkbox 
+							<Checkbox
 								checked={selectedStreams.has(stream.name)}
 								onCheckedChange={() => toggleStreamSelection(stream.name)}
 								aria-label={`Select ${stream.name}`}
@@ -206,11 +245,19 @@
 						<TableCell class="font-medium">{stream.name}</TableCell>
 						<TableCell>
 							<div class="flex items-center gap-1 text-sm">
-								<a href="/api/streams?src={encodeURIComponent(stream.name)}" class="hover:underline">
+								<a
+									href="/api/streams?src={encodeURIComponent(stream.name)}"
+									class="hover:underline"
+								>
 									{stream.info.consumers.length} / info
 								</a>
 								<span>/</span>
-								<a href="/api/streams?src={encodeURIComponent(stream.name)}&video=all&audio=all&microphone" class="hover:underline">
+								<a
+									href="/api/streams?src={encodeURIComponent(
+										stream.name
+									)}&video=all&audio=all&microphone"
+									class="hover:underline"
+								>
 									probe
 								</a>
 								<span>/</span>
@@ -221,15 +268,21 @@
 						</TableCell>
 						<TableCell>
 							<div class="flex items-center gap-2">
-								<a href="/stream?src={encodeURIComponent(stream.name)}" class="hover:underline text-sm">
+								<a
+									href="/stream?src={encodeURIComponent(stream.name)}"
+									class="text-sm hover:underline"
+								>
 									stream
 								</a>
-								<a href="/links?src={encodeURIComponent(stream.name)}" class="hover:underline text-sm">
+								<a
+									href="/links?src={encodeURIComponent(stream.name)}"
+									class="text-sm hover:underline"
+								>
 									links
 								</a>
-								<button 
+								<button
 									onclick={() => deleteStream(stream.name)}
-									class="hover:underline text-sm text-destructive"
+									class="text-destructive text-sm hover:underline"
 								>
 									delete
 								</button>
