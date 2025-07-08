@@ -32,37 +32,54 @@ The current go2rtc UI (`/www`) is a minimalist, vanilla JavaScript web interface
 ### New Architecture: SvelteKit + shadcn-svelte
 
 #### Technology Stack
-- **Framework**: SvelteKit (latest stable)
+- **Framework**: SvelteKit 2.16.0 with Svelte 5
 - **UI Components**: shadcn-svelte
 - **Data Fetching**: TanStack Query Svelte
-- **Styling**: Tailwind CSS
-- **Build Tool**: Vite
-- **Type Safety**: TypeScript
+- **Styling**: Tailwind CSS 4.0
+- **Build Tool**: Vite 6.2.6
+- **Type Safety**: TypeScript 5.0
+- **Adapter**: Static adapter for production builds
+- **Testing**: Vitest + Playwright
+- **Linting**: ESLint + Prettier
+- **Internationalization**: Paraglide (already included)
 
-#### Project Structure
+#### Project Structure (Actual Scaffold)
 ```
 /app/
 ├── src/
 │   ├── lib/
-│   │   ├── components/
-│   │   │   ├── ui/           # shadcn-svelte components
-│   │   │   ├── blocks/       # shadcn-svelte blocks (dashboard, sidebar)
-│   │   │   ├── video/        # Video player components
-│   │   │   └── dashboard/    # Dashboard-specific components
-│   │   ├── stores/           # Svelte stores for state management
-│   │   ├── services/         # API interaction services
-│   │   └── utils/            # Utility functions
+│   │   └── index.ts          # Library exports
 │   ├── routes/
-│   │   ├── +layout.svelte    # Root layout with sidebar
+│   │   ├── +layout.svelte    # Root layout (Svelte 5 syntax)
 │   │   ├── +page.svelte      # Dashboard (index)
-│   │   ├── stream/
-│   │   │   └── [id]/         # Stream player pages
-│   │   ├── add/              # Add stream page
-│   │   ├── editor/           # Config editor
-│   │   └── logs/             # Log viewer
-│   └── app.html
+│   │   └── demo/             # Demo pages (to be replaced)
+│   ├── app.css               # Global styles
+│   ├── app.d.ts              # TypeScript definitions
+│   ├── app.html              # HTML template
+│   └── hooks.ts/.server.ts   # SvelteKit hooks
 ├── static/
+│   └── favicon.svg
+├── e2e/                      # Playwright E2E tests
+├── messages/                 # i18n messages (en/ru)
+├── project.inlang/           # Paraglide i18n config
+├── svelte.config.js          # SvelteKit config with static adapter
+├── vite.config.ts            # Vite configuration
+├── tailwind.config.*         # Tailwind CSS 4.0 config
 └── package.json
+```
+
+#### Additional Structure Needed
+```
+/app/src/lib/
+├── components/
+│   ├── ui/                   # shadcn-svelte components
+│   ├── blocks/               # shadcn-svelte blocks
+│   ├── video/                # Video player components
+│   └── dashboard/            # Dashboard-specific components
+├── stores/                   # Svelte stores for state management
+├── services/                 # API interaction services
+├── queries/                  # TanStack Query definitions
+└── utils/                    # Utility functions
 ```
 
 ## Layout & Component Strategy
@@ -134,8 +151,10 @@ The current go2rtc UI (`/www`) is a minimalist, vanilla JavaScript web interface
 1. **Initialize SvelteKit**: `npm create svelte@latest app`
 2. **Install Dependencies**:
    ```bash
-   npm install -D @tailwindcss/typography tailwindcss
-   npm install lucide-svelte @tanstack/svelte-query
+   # Core dependencies
+   npm install lucide-svelte @tanstack/svelte-query mode-watcher
+   
+   # Initialize shadcn-svelte
    npx shadcn-svelte@latest init
    ```
 3. **Add Essential Components**:
@@ -146,10 +165,20 @@ The current go2rtc UI (`/www`) is a minimalist, vanilla JavaScript web interface
    npx shadcn-svelte@latest add button
    npx shadcn-svelte@latest add badge
    npx shadcn-svelte@latest add alert
+   npx shadcn-svelte@latest add input
+   npx shadcn-svelte@latest add label
+   npx shadcn-svelte@latest add textarea
+   npx shadcn-svelte@latest add select
+   npx shadcn-svelte@latest add switch
+   npx shadcn-svelte@latest add progress
+   npx shadcn-svelte@latest add tabs
+   npx shadcn-svelte@latest add scroll-area
+   npx shadcn-svelte@latest add separator
    ```
 4. **Copy Dashboard Block**: Adapt the official dashboard example as base layout
-5. **Configure Tailwind**: Setup with shadcn-svelte theme
-6. **Setup TypeScript**: Enable strict mode
+5. **Configure Tailwind**: Already configured with Tailwind CSS 4.0
+6. **Setup TypeScript**: Already configured with strict mode
+7. **Configure Static Adapter**: Already configured for production builds
 
 ### Phase 2: Core Infrastructure
 1. **Query Client Setup**: Configure TanStack Query for polling and caching
@@ -157,7 +186,14 @@ The current go2rtc UI (`/www`) is a minimalist, vanilla JavaScript web interface
 3. **State Management**: Implement Svelte stores for:
    - UI state (dark mode, loading states)
    - Local component state
-4. **Routing**: Setup SvelteKit routes matching current pages
+4. **Routing**: Create SvelteKit routes to match existing pages:
+   - `/` → Dashboard (replace demo pages)
+   - `/stream/[id]` → Stream viewer
+   - `/add` → Add stream
+   - `/editor` → Config editor
+   - `/logs` → Log viewer
+   - `/network` → Network visualization
+   - Plus legacy routes for compatibility
 
 ### Phase 3: Component Development
 1. **Adapt Dashboard Block**: Copy and customize the official dashboard example
