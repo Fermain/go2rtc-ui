@@ -74,10 +74,7 @@
 <div class="fixed inset-0 grid bg-black {gridClasses} h-dvh w-full gap-0.5 overflow-auto">
 	{#each selectedStreams as stream}
 		<div class="relative aspect-video bg-neutral-900 sm:aspect-auto sm:h-full">
-			<Go2rtcPlayer
-				streamName={stream}
-				class="h-full w-full"
-			/>
+			<Go2rtcPlayer streamName={stream} class="h-full w-full" />
 		</div>
 	{/each}
 </div>

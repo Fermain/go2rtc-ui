@@ -118,19 +118,19 @@
 				if (videoElement) {
 					const mjpegUrl = `/api/stream.mjpeg?src=${encodedStreamName}`;
 					console.log('Trying MJPEG:', mjpegUrl);
-					
+
 					// Set up event listeners for debugging
 					const onLoadStart = () => console.log('MJPEG: loadstart');
 					const onCanPlay = () => console.log('MJPEG: canplay');
 					const onError = (e: any) => console.error('MJPEG error:', e);
-					
+
 					videoElement.addEventListener('loadstart', onLoadStart);
 					videoElement.addEventListener('canplay', onCanPlay);
 					videoElement.addEventListener('error', onError);
-					
+
 					videoElement.src = mjpegUrl;
 					videoElement.load();
-					
+
 					// Return success immediately for MJPEG (it's a stream, not a discrete load)
 					return true;
 				}

@@ -26,7 +26,7 @@ export default defineConfig({
 					proxy.on('error', (err: any) => {
 						console.log('proxy error', err);
 					});
-					// eslint-disable-next-line @typescript-eslint/no-explicit-any  
+					// eslint-disable-next-line @typescript-eslint/no-explicit-any
 					proxy.on('proxyReq', (proxyReq: any, req: any) => {
 						console.log('Sending Request to the Target:', req.method, req.url);
 					});
@@ -40,7 +40,7 @@ export default defineConfig({
 					proxy.on('proxyRes', (proxyRes: any, req: any) => {
 						console.log('Received Response from the Target:', proxyRes.statusCode, req.url);
 					});
-				},
+				}
 			}
 		}
 	},

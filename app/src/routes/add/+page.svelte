@@ -305,7 +305,6 @@
 		}
 	}
 
-
 	async function submitTempStream() {
 		if (!tempStreamForm.name || !tempStreamForm.src) {
 			alert('Please fill in both name and URL');
