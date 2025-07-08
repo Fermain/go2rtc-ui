@@ -63,7 +63,8 @@
 		"clsx": "^2.1.1",
 		"codemirror": "^6.0.2",
 		"lucide-svelte": "^0.525.0",
-		"tailwind-merge": "^3.3.1"
+		"tailwind-merge": "^3.3.1",
+		"vis-network": "9.1.9"
 	},
 	"pnpm": {
 		"onlyBuiltDependencies": [

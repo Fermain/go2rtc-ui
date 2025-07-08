@@ -68,6 +68,14 @@
 							>
 								Logs
 							</a>
+							<a
+								href="/network"
+								class="hover:text-foreground text-sm {$page.url.pathname === '/network'
+									? 'text-foreground underline underline-offset-4'
+									: 'text-foreground/80'}"
+							>
+								Net
+							</a>
 						</div>
 					</div>
 
