@@ -13,39 +13,30 @@
 </script>
 
 <QueryClientProvider client={queryClient}>
-	<div class="bg-background flex h-screen">
-		<!-- Sidebar -->
-		<aside class="bg-card border-border w-64 border-r">
-			<div class="p-4">
-				<h1 class="text-foreground text-xl font-bold">go2rtc</h1>
+	<div class="min-h-screen bg-background">
+		<!-- Top Navigation -->
+		<nav class="border-b border-border bg-card">
+			<div class="px-4 py-3">
+				<div class="flex items-center gap-6">
+					<span class="text-xl font-semibold">go2rtc</span>
+					<div class="flex gap-4">
+						<a href="/" class="text-sm hover:text-foreground text-foreground/80">
+							Streams
+						</a>
+						<a href="/config" class="text-sm hover:text-foreground text-foreground/80">
+							Config
+						</a>
+						<a href="/logs" class="text-sm hover:text-foreground text-foreground/80">
+							Logs
+						</a>
+					</div>
+				</div>
 			</div>
-			<nav class="space-y-1 px-2">
-				<a
-					href="/"
-					class="text-foreground hover:bg-accent hover:text-accent-foreground flex items-center rounded-md px-3 py-2 text-sm font-medium"
-				>
-					Streams
-				</a>
-				<a
-					href="/config"
-					class="text-muted-foreground hover:bg-accent hover:text-accent-foreground flex items-center rounded-md px-3 py-2 text-sm font-medium"
-				>
-					Config
-				</a>
-				<a
-					href="/logs"
-					class="text-muted-foreground hover:bg-accent hover:text-accent-foreground flex items-center rounded-md px-3 py-2 text-sm font-medium"
-				>
-					Logs
-				</a>
-			</nav>
-		</aside>
+		</nav>
 
 		<!-- Main content -->
-		<main class="flex-1 overflow-auto">
-			<div class="p-6">
-				{@render children()}
-			</div>
+		<main class="px-4 py-6">
+			{@render children()}
 		</main>
 	</div>
 </QueryClientProvider>
