@@ -8,14 +8,14 @@ export function useLogsQuery(pollInterval = 5000, enabled = true) {
 		queryFn: LogService.getLogs,
 		refetchInterval: enabled ? pollInterval : false,
 		refetchOnWindowFocus: true,
-		enabled,
+		enabled
 	});
 }
 
 // Mutation for clearing logs
 export function useClearLogsMutation() {
 	const queryClient = useQueryClient();
-	
+
 	return createMutation({
 		mutationFn: LogService.clearLogs,
 		onSuccess: () => {
@@ -24,6 +24,6 @@ export function useClearLogsMutation() {
 		},
 		onError: (error) => {
 			console.error('Failed to clear logs:', error);
-		},
+		}
 	});
 }

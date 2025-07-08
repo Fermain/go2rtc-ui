@@ -13,20 +13,29 @@
 </script>
 
 <QueryClientProvider client={queryClient}>
-	<div class="flex h-screen bg-background">
+	<div class="bg-background flex h-screen">
 		<!-- Sidebar -->
-		<aside class="w-64 bg-card border-r border-border">
+		<aside class="bg-card border-border w-64 border-r">
 			<div class="p-4">
-				<h1 class="text-xl font-bold text-foreground">go2rtc</h1>
+				<h1 class="text-foreground text-xl font-bold">go2rtc</h1>
 			</div>
-			<nav class="px-2 space-y-1">
-				<a href="/" class="flex items-center px-3 py-2 text-sm font-medium text-foreground hover:bg-accent hover:text-accent-foreground rounded-md">
+			<nav class="space-y-1 px-2">
+				<a
+					href="/"
+					class="text-foreground hover:bg-accent hover:text-accent-foreground flex items-center rounded-md px-3 py-2 text-sm font-medium"
+				>
 					Streams
 				</a>
-				<a href="/config" class="flex items-center px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground rounded-md">
+				<a
+					href="/config"
+					class="text-muted-foreground hover:bg-accent hover:text-accent-foreground flex items-center rounded-md px-3 py-2 text-sm font-medium"
+				>
 					Config
 				</a>
-				<a href="/logs" class="flex items-center px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground rounded-md">
+				<a
+					href="/logs"
+					class="text-muted-foreground hover:bg-accent hover:text-accent-foreground flex items-center rounded-md px-3 py-2 text-sm font-medium"
+				>
 					Logs
 				</a>
 			</nav>

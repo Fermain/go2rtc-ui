@@ -8,14 +8,14 @@ export function useConfigQuery(enabled = true) {
 		queryFn: ConfigService.getConfig,
 		enabled,
 		refetchOnWindowFocus: false, // Config doesn't change often
-		staleTime: 30000, // 30 seconds
+		staleTime: 30000 // 30 seconds
 	});
 }
 
 // Mutation for updating configuration
 export function useUpdateConfigMutation() {
 	const queryClient = useQueryClient();
-	
+
 	return createMutation({
 		mutationFn: (yamlConfig: string) => ConfigService.updateConfig(yamlConfig),
 		onSuccess: () => {
@@ -24,14 +24,14 @@ export function useUpdateConfigMutation() {
 		},
 		onError: (error) => {
 			console.error('Failed to update configuration:', error);
-		},
+		}
 	});
 }
 
 // Mutation for restarting the service
 export function useRestartMutation() {
 	const queryClient = useQueryClient();
-	
+
 	return createMutation({
 		mutationFn: ConfigService.restart,
 		onSuccess: () => {
@@ -40,6 +40,6 @@ export function useRestartMutation() {
 		},
 		onError: (error) => {
 			console.error('Failed to restart service:', error);
-		},
+		}
 	});
 }

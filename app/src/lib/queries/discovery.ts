@@ -11,7 +11,7 @@ export function useALSADevicesQuery(enabled = true) {
 		queryFn: DiscoveryService.getALSADevices,
 		enabled,
 		staleTime: DISCOVERY_STALE_TIME,
-		refetchInterval: enabled ? DISCOVERY_REFETCH_INTERVAL : false,
+		refetchInterval: enabled ? DISCOVERY_REFETCH_INTERVAL : false
 	});
 }
 
@@ -21,7 +21,7 @@ export function useHomeKitDevicesQuery(enabled = true) {
 		queryFn: DiscoveryService.getHomeKitDevices,
 		enabled,
 		staleTime: DISCOVERY_STALE_TIME,
-		refetchInterval: enabled ? DISCOVERY_REFETCH_INTERVAL : false,
+		refetchInterval: enabled ? DISCOVERY_REFETCH_INTERVAL : false
 	});
 }
 
@@ -31,7 +31,7 @@ export function useHomeAssistantDevicesQuery(enabled = true) {
 		queryFn: DiscoveryService.getHomeAssistantDevices,
 		enabled,
 		staleTime: DISCOVERY_STALE_TIME,
-		refetchInterval: enabled ? DISCOVERY_REFETCH_INTERVAL : false,
+		refetchInterval: enabled ? DISCOVERY_REFETCH_INTERVAL : false
 	});
 }
 
@@ -41,7 +41,7 @@ export function useONVIFDevicesQuery(enabled = true) {
 		queryFn: DiscoveryService.getONVIFDevices,
 		enabled,
 		staleTime: DISCOVERY_STALE_TIME,
-		refetchInterval: enabled ? DISCOVERY_REFETCH_INTERVAL : false,
+		refetchInterval: enabled ? DISCOVERY_REFETCH_INTERVAL : false
 	});
 }
 
@@ -51,7 +51,7 @@ export function useNestDevicesQuery(enabled = true) {
 		queryFn: DiscoveryService.getNestDevices,
 		enabled,
 		staleTime: DISCOVERY_STALE_TIME,
-		refetchInterval: enabled ? DISCOVERY_REFETCH_INTERVAL : false,
+		refetchInterval: enabled ? DISCOVERY_REFETCH_INTERVAL : false
 	});
 }
 
@@ -61,7 +61,7 @@ export function useRoborockDevicesQuery(enabled = true) {
 		queryFn: DiscoveryService.getRoborockDevices,
 		enabled,
 		staleTime: DISCOVERY_STALE_TIME,
-		refetchInterval: enabled ? DISCOVERY_REFETCH_INTERVAL : false,
+		refetchInterval: enabled ? DISCOVERY_REFETCH_INTERVAL : false
 	});
 }
 
@@ -71,7 +71,7 @@ export function useDVRIPDevicesQuery(enabled = true) {
 		queryFn: DiscoveryService.getDVRIPDevices,
 		enabled,
 		staleTime: DISCOVERY_STALE_TIME,
-		refetchInterval: enabled ? DISCOVERY_REFETCH_INTERVAL : false,
+		refetchInterval: enabled ? DISCOVERY_REFETCH_INTERVAL : false
 	});
 }
 
@@ -81,7 +81,7 @@ export function useFFmpegDevicesQuery(enabled = true) {
 		queryFn: DiscoveryService.getFFmpegDevices,
 		enabled,
 		staleTime: DISCOVERY_STALE_TIME,
-		refetchInterval: enabled ? DISCOVERY_REFETCH_INTERVAL : false,
+		refetchInterval: enabled ? DISCOVERY_REFETCH_INTERVAL : false
 	});
 }
 
@@ -91,6 +91,6 @@ export function useFFmpegHardwareQuery(enabled = true) {
 		queryFn: DiscoveryService.getFFmpegHardware,
 		enabled,
 		staleTime: DISCOVERY_STALE_TIME,
-		refetchInterval: enabled ? DISCOVERY_REFETCH_INTERVAL : false,
+		refetchInterval: enabled ? DISCOVERY_REFETCH_INTERVAL : false
 	});
 }

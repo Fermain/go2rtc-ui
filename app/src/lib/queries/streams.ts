@@ -8,7 +8,7 @@ export function useStreamsQuery(pollInterval = 3000, enabled = true) {
 		queryFn: StreamService.getStreams,
 		refetchInterval: enabled ? pollInterval : false,
 		refetchOnWindowFocus: true,
-		enabled,
+		enabled
 	});
 }
 
@@ -18,14 +18,14 @@ export function useStreamQuery(streamId: string, enabled = true) {
 		queryKey: ['stream', streamId],
 		queryFn: () => StreamService.getStreamInfo(streamId),
 		enabled: enabled && !!streamId,
-		refetchInterval: enabled ? 5000 : false,
+		refetchInterval: enabled ? 5000 : false
 	});
 }
 
 // Mutation for adding streams
 export function useAddStreamMutation() {
 	const queryClient = useQueryClient();
-	
+
 	return createMutation({
 		mutationFn: (request: NewStreamRequest) => StreamService.addStream(request),
 		onSuccess: () => {
@@ -34,14 +34,14 @@ export function useAddStreamMutation() {
 		},
 		onError: (error) => {
 			console.error('Failed to add stream:', error);
-		},
+		}
 	});
 }
 
 // Mutation for deleting streams
 export function useDeleteStreamMutation() {
 	const queryClient = useQueryClient();
-	
+
 	return createMutation({
 		mutationFn: (streamId: string) => StreamService.deleteStream(streamId),
 		onSuccess: () => {
@@ -50,6 +50,6 @@ export function useDeleteStreamMutation() {
 		},
 		onError: (error) => {
 			console.error('Failed to delete stream:', error);
-		},
+		}
 	});
 }

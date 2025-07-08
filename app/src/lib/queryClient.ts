@@ -8,10 +8,10 @@ export const queryClient = new QueryClient({
 			staleTime: 5000, // Consider data stale after 5 seconds
 			refetchOnWindowFocus: true,
 			retry: 3,
-			retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+			retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000)
 		},
 		mutations: {
-			retry: 1,
-		},
-	},
+			retry: 1
+		}
+	}
 });

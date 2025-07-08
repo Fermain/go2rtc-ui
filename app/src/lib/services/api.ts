@@ -85,14 +85,14 @@ export type NetworkGraphResponse = string;
 // Base fetch wrapper with error handling
 async function apiFetch<T>(endpoint: string, options?: RequestInit): Promise<T> {
 	const url = `${API_BASE_URL}${endpoint}`;
-	
+
 	try {
 		const response = await fetch(url, {
 			headers: {
 				'Content-Type': 'application/json',
-				...options?.headers,
+				...options?.headers
 			},
-			...options,
+			...options
 		});
 
 		if (!response.ok) {
@@ -135,7 +135,7 @@ export class StreamService {
 			name,
 			info,
 			status: info.consumers.length > 0 ? 'online' : 'offline',
-			consumerCount: info.consumers.length,
+			consumerCount: info.consumers.length
 		}));
 	}
 
@@ -145,33 +145,36 @@ export class StreamService {
 			params.append('name', request.name);
 		}
 		return apiFetch<void>(`/streams?${params.toString()}`, {
-			method: 'PUT',
+			method: 'PUT'
 		});
 	}
 
 	static async deleteStream(streamName: string): Promise<void> {
 		return apiFetch<void>(`/streams?src=${encodeURIComponent(streamName)}`, {
-			method: 'DELETE',
+			method: 'DELETE'
 		});
 	}
 
-	static async getStreamInfo(streamName: string, filters?: {
-		video?: string;
-		audio?: string;
-		microphone?: boolean;
-	}): Promise<StreamInfo> {
+	static async getStreamInfo(
+		streamName: string,
+		filters?: {
+			video?: string;
+			audio?: string;
+			microphone?: boolean;
+		}
+	): Promise<StreamInfo> {
 		const params = new URLSearchParams({ src: streamName });
 		if (filters?.video) params.append('video', filters.video);
 		if (filters?.audio) params.append('audio', filters.audio);
 		if (filters?.microphone) params.append('microphone', '');
-		
+
 		return apiFetch<StreamInfo>(`/streams?${params.toString()}`);
 	}
 
 	static async publishStream(src: string, dst: string): Promise<void> {
 		const params = new URLSearchParams({ src, dst });
 		return apiFetch<void>(`/streams?${params.toString()}`, {
-			method: 'POST',
+			method: 'POST'
 		});
 	}
 }
@@ -186,15 +189,15 @@ export class ConfigService {
 		return apiFetch<void>('/config', {
 			method: 'POST',
 			headers: {
-				'Content-Type': 'text/plain',
+				'Content-Type': 'text/plain'
 			},
-			body: yamlConfig,
+			body: yamlConfig
 		});
 	}
 
 	static async restart(): Promise<void> {
 		return apiFetch<void>('/restart', {
-			method: 'POST',
+			method: 'POST'
 		});
 	}
 }
@@ -206,8 +209,8 @@ export class LogService {
 		const jsonLines = await apiFetch<string>('/log');
 		return jsonLines
 			.split('\n')
-			.filter(line => line.trim())
-			.map(line => {
+			.filter((line) => line.trim())
+			.map((line) => {
 				try {
 					return JSON.parse(line) as LogEntry;
 				} catch {
@@ -223,7 +226,7 @@ export class LogService {
 
 	static async clearLogs(): Promise<void> {
 		return apiFetch<void>('/log', {
-			method: 'DELETE',
+			method: 'DELETE'
 		});
 	}
 }
@@ -233,7 +236,7 @@ export class NetworkService {
 	static async getNetworkGraph(streamFilter?: string[]): Promise<NetworkGraphResponse> {
 		const params = new URLSearchParams();
 		if (streamFilter) {
-			streamFilter.forEach(src => params.append('src', src));
+			streamFilter.forEach((src) => params.append('src', src));
 		}
 		const query = params.toString();
 		return apiFetch<NetworkGraphResponse>(`/streams.dot${query ? `?${query}` : ''}`);

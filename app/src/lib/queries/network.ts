@@ -9,6 +9,6 @@ export function useNetworkGraphQuery(streamFilter?: string[], pollInterval = 500
 		refetchInterval: enabled ? pollInterval : false,
 		refetchOnWindowFocus: true,
 		enabled,
-		staleTime: 2000, // Network topology can change quickly
+		staleTime: 2000 // Network topology can change quickly
 	});
 }

@@ -5,11 +5,19 @@ import { browser } from '$app/environment';
 export type Theme = 'light' | 'dark' | 'system';
 
 // Persisted theme preference store
-export const themePreference = persist(writable<Theme>('system'), createLocalStorage<Theme>(), 'theme');
+export const themePreference = persist(
+	writable<Theme>('system'),
+	createLocalStorage<Theme>(),
+	'theme'
+);
 
 // System dark mode media query store
 function createSystemDarkModeStore() {
-	const store = persist(writable<boolean>(false), createLocalStorage<boolean>(), 'system-dark-mode');
+	const store = persist(
+		writable<boolean>(false),
+		createLocalStorage<boolean>(),
+		'system-dark-mode'
+	);
 
 	if (browser) {
 		const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
