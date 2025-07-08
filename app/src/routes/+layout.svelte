@@ -33,11 +33,10 @@
 		theme.init();
 		detectPlatform();
 
-		// Keyboard shortcut handler for Cmd/Ctrl+Plus (add stream)
+		// Keyboard shortcut handler for Cmd/Ctrl+K (add stream)
 		function handleKeydown(e: KeyboardEvent) {
-			// Check for Cmd+Plus (Mac) or Ctrl+Plus (Windows/Linux)
-			// Handle both '+' key and Shift+= combination that produces '+'
-			if ((e.metaKey || e.ctrlKey) && (e.key === '+' || (e.key === '=' && e.shiftKey))) {
+			// Check for Cmd+K (Mac) or Ctrl+K (Windows/Linux)
+			if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
 				e.preventDefault();
 				goto('/add');
 			}
@@ -109,17 +108,19 @@
 
 					<div class="flex items-center gap-3">
 						<!-- Add Stream Button with keyboard shortcut -->
-						<Button 
-							variant="outline" 
-							size="sm" 
+						<Button
+							variant="outline"
+							size="sm"
 							onclick={() => goto('/add')}
-							aria-label="Add Stream (Keyboard shortcut: {modifierKey}+Plus)"
-							title="Add Stream ({modifierKey}+Plus)"
+							aria-label="Add Stream (Keyboard shortcut: {modifierKey}+K)"
+							title="Add Stream ({modifierKey}+K)"
 						>
 							<span class="flex items-center gap-2">
 								Add Stream
-								<kbd class="bg-muted text-muted-foreground pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border px-1.5 font-mono text-[10px] font-medium opacity-100">
-									<span class="text-xs">{modifierKey}</span>+
+								<kbd
+									class="bg-muted text-muted-foreground pointer-events-none inline-flex h-5 items-center gap-1 rounded border px-1.5 font-mono text-[10px] font-medium opacity-100 select-none"
+								>
+									<span class="text-xs">{modifierKey}</span>K
 								</kbd>
 							</span>
 						</Button>

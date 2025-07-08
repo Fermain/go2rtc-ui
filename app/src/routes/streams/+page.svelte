@@ -1,10 +1,12 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
+	import Go2rtcPlayer from '$lib/components/Go2rtcPlayer.svelte';
 
 	// Get selected streams from URL
 	$: selectedStreams = $page.url.searchParams.getAll('src');
 	$: streamCount = selectedStreams.length;
+	$: selectedModes = $page.url.searchParams.get('mode')?.split(',') || ['webrtc', 'mse', 'hls'];
 
 	// Calculate responsive grid classes
 	$: gridClasses = getResponsiveGridClasses(streamCount);
@@ -73,12 +75,10 @@
 <div class="fixed inset-0 grid bg-black {gridClasses} h-dvh w-full gap-0.5 overflow-auto">
 	{#each selectedStreams as stream}
 		<div class="relative aspect-video bg-neutral-900 sm:aspect-auto sm:h-full">
-			<div
-				class="absolute inset-0 flex items-center justify-center p-2 text-center text-sm text-neutral-500"
-			>
-				{stream}
-			</div>
-			<!-- Video element will be implemented with WebRTC/MSE integration -->
+			<Go2rtcPlayer
+				streamName={stream}
+				class="h-full w-full"
+			/>
 		</div>
 	{/each}
 </div>
