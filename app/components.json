@@ -1,0 +1,15 @@
+{
+  "style": "new-york",
+  "tailwind": {
+    "config": "tailwind.config.js",
+    "css": "src/app.css",
+    "baseColor": "slate"
+  },
+  "rsc": false,
+  "tsx": false,
+  "aliases": {
+    "utils": "$lib/utils",
+    "components": "$lib/components",
+    "ui": "$lib/components/ui"
+  }
+}
