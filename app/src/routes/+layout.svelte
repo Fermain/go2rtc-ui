@@ -1,13 +1,12 @@
 <script lang="ts">
 	import '../app.css';
-	import { QueryClient, QueryClientProvider } from '@tanstack/svelte-query';
+	import { QueryClientProvider } from '@tanstack/svelte-query';
 	import { queryClient } from '$lib/queryClient';
 	import { theme, resolvedTheme } from '$lib/stores/theme';
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { Button } from '$lib/components/ui/button';
-	import { Switch } from '$lib/components/ui/switch';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { Info, Sun, Moon } from 'lucide-svelte';
 

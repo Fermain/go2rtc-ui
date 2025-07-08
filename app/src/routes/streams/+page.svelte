@@ -6,7 +6,6 @@
 	// Get selected streams from URL
 	$: selectedStreams = $page.url.searchParams.getAll('src');
 	$: streamCount = selectedStreams.length;
-	$: selectedModes = $page.url.searchParams.get('mode')?.split(',') || ['webrtc', 'mse', 'hls'];
 
 	// Calculate responsive grid classes
 	$: gridClasses = getResponsiveGridClasses(streamCount);

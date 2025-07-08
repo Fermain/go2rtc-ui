@@ -2,7 +2,7 @@
 	import { onMount, onDestroy } from 'svelte';
 	import { page } from '$app/stores';
 	import { browser } from '$app/environment';
-	import { Alert, AlertDescription, AlertTitle } from '$lib/components/ui/alert';
+	import { Alert, AlertDescription } from '$lib/components/ui/alert';
 
 	// vis-network will be imported dynamically for SSR compatibility
 	let vis: any;

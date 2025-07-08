@@ -7,7 +7,6 @@
 		TableHeader,
 		TableRow
 	} from '$lib/components/ui/table';
-	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { onMount, onDestroy } from 'svelte';

@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
-	import { Label } from '$lib/components/ui/label';
 	import {
 		Table,
 		TableBody,
@@ -11,8 +10,6 @@
 		TableRow
 	} from '$lib/components/ui/table';
 	import * as Accordion from '$lib/components/ui/accordion';
-	import { onMount } from 'svelte';
-	import { browser } from '$app/environment';
 
 	// Loading state
 	let isLoading = $state(false);
@@ -308,12 +305,6 @@
 		}
 	}
 
-	function drawTable(data: any[]) {
-		if (!data || data.length === 0) {
-			return 'No data available';
-		}
-		return data;
-	}
 
 	async function submitTempStream() {
 		if (!tempStreamForm.name || !tempStreamForm.src) {
