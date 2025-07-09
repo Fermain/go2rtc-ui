@@ -23,7 +23,9 @@
 	let autoUpdate = $state(true);
 	let reverseOrder = $state(false);
 	let refreshInterval: number | undefined;
-	let isLoading = $state(false);
+	let isLoading = $state(false); // For initial load and table content
+	let isRefreshing = $state(false); // For manual refresh button
+	let isClearing = $state(false); // For clear button
 	let error: string | null = $state(null);
 
 	function formatTime(isoString: string): string {
@@ -60,11 +62,16 @@
 		}
 	}
 
-	async function loadLogs() {
+	async function loadLogs(isManual = false) {
 		if (!browser) return;
 
 		try {
-			isLoading = true;
+			// Set appropriate loading state
+			if (isManual) {
+				isRefreshing = true;
+			} else {
+				isLoading = true;
+			}
 			error = null;
 
 			const response = await fetch('/api/log', {
@@ -119,6 +126,7 @@
 			error = err instanceof Error ? err.message : 'Failed to load logs';
 		} finally {
 			isLoading = false;
+			isRefreshing = false;
 		}
 	}
 
@@ -126,7 +134,7 @@
 		if (!browser) return;
 
 		try {
-			isLoading = true;
+			isClearing = true;
 			error = null;
 
 			const response = await fetch('/api/log', {
@@ -153,7 +161,7 @@
 			error = errorMessage;
 			alert(errorMessage);
 		} finally {
-			isLoading = false;
+			isClearing = false;
 		}
 	}
 
@@ -166,9 +174,13 @@
 		loadLogs(); // Reload to apply new order
 	}
 
+	function manualRefresh() {
+		loadLogs(true);
+	}
+
 	function retryLoad() {
 		error = null;
-		loadLogs();
+		loadLogs(true);
 	}
 
 	onMount(() => {
@@ -176,8 +188,8 @@
 
 		// Auto-refresh every 5 seconds
 		refreshInterval = window.setInterval(() => {
-			if (autoUpdate && !isLoading) {
-				loadLogs();
+			if (autoUpdate && !isLoading && !isRefreshing) {
+				loadLogs(); // Use false (default) for auto-refresh to avoid manual loading state
 			}
 		}, 5000);
 	});
@@ -213,8 +225,13 @@
 <div class="space-y-4">
 	<div class="flex flex-wrap items-center justify-between gap-4">
 		<div class="flex items-center gap-2">
-			<Button size="sm" variant="outline" onclick={clearLogs} disabled={isLoading}>
-				{isLoading ? 'Loading...' : 'Clean'}
+			<Button size="sm" variant="outline" onclick={clearLogs} disabled={isClearing}>
+				<span class="flex items-center gap-2">
+					{#if isClearing}
+						<div class="h-3 w-3 animate-spin rounded-full border border-gray-300 border-t-gray-600"></div>
+					{/if}
+					Clean
+				</span>
 			</Button>
 			<Button size="sm" variant="outline" onclick={toggleAutoUpdate}>
 				Auto Update: {autoUpdate ? 'ON' : 'OFF'}
@@ -222,20 +239,23 @@
 			<Button size="sm" variant="outline" onclick={toggleReverseOrder}>
 				Reverse Log Order: {reverseOrder ? 'ON' : 'OFF'}
 			</Button>
-			<Button size="sm" variant="outline" onclick={loadLogs} disabled={isLoading}>
-				{isLoading ? 'Refreshing...' : 'Refresh'}
+			<Button size="sm" variant="outline" onclick={manualRefresh} disabled={isLoading || isRefreshing}>
+				<span class="flex items-center gap-2">
+					{#if isRefreshing}
+						<div class="h-3 w-3 animate-spin rounded-full border border-gray-300 border-t-gray-600"></div>
+					{/if}
+					Refresh
+				</span>
 			</Button>
 		</div>
 		{#if error}
-			<div
-				class="text-destructive bg-destructive/10 flex items-center gap-2 rounded px-2 py-1 text-xs"
-			>
-				<span>{error}</span>
+			<div class="flex items-center gap-2">
+				<span class="text-sm text-red-600">Connection error</span>
 				<Button
 					size="sm"
 					variant="ghost"
 					onclick={retryLoad}
-					disabled={isLoading}
+					disabled={isRefreshing}
 					class="h-6 px-2 text-xs"
 				>
 					Retry
@@ -256,13 +276,16 @@
 			<TableBody>
 				{#if isLoading && logs.length === 0}
 					<TableRow>
-						<TableCell colspan="3" class="py-8 text-center text-gray-500">
-							Loading logs...
+						<TableCell colspan={3} class="py-8 text-center">
+							<div class="flex items-center justify-center gap-2">
+								<div class="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600"></div>
+								Loading logs...
+							</div>
 						</TableCell>
 					</TableRow>
 				{:else if logs.length === 0}
 					<TableRow>
-						<TableCell colspan="3" class="py-8 text-center text-gray-500">
+						<TableCell colspan={3} class="py-8 text-center text-gray-500">
 							No logs available
 						</TableCell>
 					</TableRow>

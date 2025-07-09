@@ -1,8 +1,14 @@
-import { AppService } from '$lib/services/api.js';
+import type { AppInfo } from '$lib/services/api.js';
 
-export async function load() {
+export async function load({ fetch }) {
 	try {
-		const appInfo = await AppService.getAppInfo();
+		// Use SvelteKit's fetch for proper SSR/hydration behavior
+		const response = await fetch('/api');
+		if (!response.ok) {
+			throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+		}
+		
+		const appInfo: AppInfo = await response.json();
 		return {
 			appInfo: {
 				version: appInfo.version || 'Unknown',
