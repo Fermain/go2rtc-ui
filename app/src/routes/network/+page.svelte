@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { browser } from '$app/environment';
 	import { Alert, AlertDescription } from '$lib/components/ui/alert';
 
@@ -16,7 +16,7 @@
 	let isInitialized = $state(false);
 
 	// Get stream filter from URL params (matches original ?src=camera1)
-	const streamFilter = $derived($page.url.searchParams.getAll('src'));
+	const streamFilter = $derived(page.url.searchParams.getAll('src'));
 
 	const networkOptions = {
 		edges: {
@@ -131,7 +131,7 @@
 		</div>
 	{/if}
 
-	<div bind:this={networkContainer} class="h-full w-full" />
+	<div bind:this={networkContainer} class="h-full w-full"></div>
 </div>
 
 <style>

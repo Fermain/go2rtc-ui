@@ -44,6 +44,9 @@ importers:
       codemirror:
         specifier: ^6.0.2
         version: 6.0.2
+      hls.js:
+        specifier: ^1.6.7
+        version: 1.6.7
       lucide-svelte:
         specifier: ^0.525.0
         version: 0.525.0(svelte@5.35.4)
@@ -1320,6 +1323,9 @@ packages:
     resolution: {integrity: sha512-Pq0h+hvsVm6dDEa8x82GnLSYHOzNDt7f0ddFa3FqcQlgzEiptPqL+XrOJNavjOzSYiYWIrgeVYYgGlLmnxwilQ==}
     engines: {node: '>=8'}
 
+  hls.js@1.6.7:
+    resolution: {integrity: sha512-QW2fnwDGKGc9DwQUGLbmMOz8G48UZK7PVNJPcOUql1b8jubKx4/eMHNP5mGqr6tYlJNDG1g10Lx2U/qPzL6zwQ==}
+
   human-id@4.1.1:
     resolution: {integrity: sha512-3gKm/gCSUipeLsRYZbbdA1BD83lBoWUkZ7G9VFrhWPAU76KwYo5KR8V28bpoPm/ygy0x5/GCbpRQdY7VLYCoIg==}
     hasBin: true
@@ -1781,7 +1787,6 @@ packages:
 
   shaka-player@4.15.6:
     resolution: {integrity: sha512-92tb4+DshwzGBp2iZebKqdXe/BHKxARMBI9OKhxKisgUl5pNsVUtxs9CQ41hnoov8cOtfjWixBRrwdNSaH7+lQ==}
-    engines: {node: '>=18'}
 
   shebang-command@2.0.0:
     resolution: {integrity: sha512-kHxr2zZpYtdmrN1qDjrrX/Z1rR1kG8Dx+gkpK1G4eXmvXswmcE1hTWBWYUzlraYw1/yZp6YuDY77YtvbN0dmDA==}
@@ -3321,6 +3326,8 @@ snapshots:
   has-flag@4.0.0: {}
 
   has-own-prop@2.0.0: {}
+
+  hls.js@1.6.7: {}
 
   human-id@4.1.1: {}
 

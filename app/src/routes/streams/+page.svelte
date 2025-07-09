@@ -1,14 +1,14 @@
 <script lang="ts">
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { onMount } from 'svelte';
 	import Go2rtcPlayer from '$lib/components/Go2rtcPlayer.svelte';
 
 	// Get selected streams from URL
-	$: selectedStreams = $page.url.searchParams.getAll('src');
-	$: streamCount = selectedStreams.length;
+	let selectedStreams = $derived(page.url.searchParams.getAll('src'));
+	let streamCount = $derived(selectedStreams.length);
 
 	// Calculate responsive grid classes
-	$: gridClasses = getResponsiveGridClasses(streamCount);
+	let gridClasses = $derived(getResponsiveGridClasses(streamCount));
 
 	function getResponsiveGridClasses(count: number): string {
 		// Mobile first approach with Tailwind 4 breakpoints

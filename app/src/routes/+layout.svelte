@@ -4,7 +4,7 @@
 	import { queryClient } from '$lib/queryClient';
 	import { theme, resolvedTheme } from '$lib/stores/theme';
 	import { onMount } from 'svelte';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { Button } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
@@ -64,7 +64,7 @@
 						<div class="flex gap-4">
 							<a
 								href="/"
-								class="hover:text-foreground text-sm {$page.url.pathname === '/'
+								class="hover:text-foreground text-sm {page.url.pathname === '/'
 									? 'text-foreground underline underline-offset-4'
 									: 'text-foreground/80'}"
 							>
@@ -72,7 +72,7 @@
 							</a>
 							<a
 								href="/add"
-								class="hover:text-foreground text-sm {$page.url.pathname === '/add'
+								class="hover:text-foreground text-sm {page.url.pathname === '/add'
 									? 'text-foreground underline underline-offset-4'
 									: 'text-foreground/80'}"
 							>
@@ -80,7 +80,7 @@
 							</a>
 							<a
 								href="/config"
-								class="hover:text-foreground text-sm {$page.url.pathname === '/config'
+								class="hover:text-foreground text-sm {page.url.pathname === '/config'
 									? 'text-foreground underline underline-offset-4'
 									: 'text-foreground/80'}"
 							>
@@ -88,7 +88,7 @@
 							</a>
 							<a
 								href="/logs"
-								class="hover:text-foreground text-sm {$page.url.pathname === '/logs'
+								class="hover:text-foreground text-sm {page.url.pathname === '/logs'
 									? 'text-foreground underline underline-offset-4'
 									: 'text-foreground/80'}"
 							>
@@ -96,7 +96,7 @@
 							</a>
 							<a
 								href="/network"
-								class="hover:text-foreground text-sm {$page.url.pathname === '/network'
+								class="hover:text-foreground text-sm {page.url.pathname === '/network'
 									? 'text-foreground underline underline-offset-4'
 									: 'text-foreground/80'}"
 							>
