@@ -2,25 +2,13 @@ import { writable } from 'svelte/store';
 import { browser } from '$app/environment';
 import { goto } from '$app/navigation';
 
-export type ShortcutAction = 
-	| 'refresh-streams'
-	| 'add-stream' 
-	| 'save-config'
-	| 'go-back'
-	| 'toggle-theme';
-
-export interface ShortcutConfig {
-	key: string;
-	modifier?: ('ctrl' | 'meta' | 'shift' | 'alt')[];
-	description: string;
-	action: ShortcutAction;
-	callback?: () => void;
-}
+// Simple action types we actually use
+export type ShortcutAction = 'refresh-streams' | 'add-stream' | 'save-config' | 'go-back';
 
 // Platform-aware modifier key detection
 export const modifierKey = writable<'⌘' | 'Ctrl'>('⌘');
 
-function detectPlatform() {
+function detectPlatform(): 'meta' | 'ctrl' {
 	if (browser && navigator?.platform) {
 		const platform = navigator.platform.toLowerCase();
 		const isMac = platform.includes('mac');
@@ -30,12 +18,7 @@ function detectPlatform() {
 	return 'meta';
 }
 
-// Get the appropriate modifier for the current platform
-export function getPlatformModifier(): 'meta' | 'ctrl' {
-	return detectPlatform();
-}
-
-// Shortcut actions registry - callbacks can be dynamically registered
+// Simple registry for page-specific shortcuts
 const actionCallbacks = new Map<ShortcutAction, () => void>();
 
 export function registerShortcutAction(action: ShortcutAction, callback: () => void) {
@@ -46,12 +29,12 @@ export function unregisterShortcutAction(action: ShortcutAction) {
 	actionCallbacks.delete(action);
 }
 
-export function executeShortcutAction(action: ShortcutAction) {
+function executeAction(action: ShortcutAction) {
 	const callback = actionCallbacks.get(action);
 	if (callback) {
 		callback();
 	} else {
-		// Fallback for global actions
+		// Simple fallback for global actions
 		switch (action) {
 			case 'add-stream':
 				goto('/add');
@@ -63,40 +46,18 @@ export function executeShortcutAction(action: ShortcutAction) {
 	}
 }
 
-// Global shortcuts that work everywhere
-export const globalShortcuts: ShortcutConfig[] = [
+// Global shortcuts in @svelte-put/shortcut format
+export const globalShortcuts = [
 	{
 		key: 'k',
-		modifier: [getPlatformModifier()],
-		description: 'Add new stream',
-		action: 'add-stream'
+		modifier: [detectPlatform()],
+		callback: () => executeAction('add-stream')
 	},
 	{
 		key: 'Escape',
-		description: 'Go back',
-		action: 'go-back'
+		callback: () => executeAction('go-back')
 	}
 ];
-
-// Page-specific shortcuts
-export const pageShortcuts = {
-	streams: [
-		{
-			key: 'r',
-			modifier: [getPlatformModifier()],
-			description: 'Refresh streams',
-			action: 'refresh-streams' as ShortcutAction
-		}
-	],
-	config: [
-		{
-			key: 's',
-			modifier: [getPlatformModifier()],
-			description: 'Save configuration',
-			action: 'save-config' as ShortcutAction
-		}
-	]
-} as const;
 
 // Initialize platform detection
 if (browser) {

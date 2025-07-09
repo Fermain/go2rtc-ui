@@ -12,7 +12,7 @@
 
 	// State
 	let editor: any = null;
-	let configEditor: HTMLElement = $state();
+	let configEditor: HTMLElement;
 	let isLoading = $state(false);
 	let isSaving = $state(false);
 	let error = $state<string | null>(null);
