@@ -128,15 +128,22 @@ export class StreamService {
 		return apiFetch<StreamsResponse>('/streams');
 	}
 
-	// Get processed streams for UI consumption
+	// Get processed streams for UI consumption (matches original UI logic)
 	static async getStreams(): Promise<Stream[]> {
 		const streamsResponse = await this.getStreamsRaw();
-		return Object.entries(streamsResponse).map(([name, info]) => ({
-			name,
-			info,
-			status: info.consumers.length > 0 ? 'online' : 'offline',
-			consumerCount: info.consumers.length
-		}));
+		return Object.entries(streamsResponse).map(([name, info]) => {
+			const hasProducers = info.producers && info.producers.length > 0;
+
+			return {
+				name,
+				info: {
+					producers: info.producers || [],
+					consumers: info.consumers || []
+				},
+				status: hasProducers ? 'online' : 'offline', // Original logic: based on producers
+				consumerCount: info.consumers.length
+			};
+		});
 	}
 
 	static async addStream(request: NewStreamRequest): Promise<void> {
