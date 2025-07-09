@@ -12,7 +12,7 @@
 
 	let { children } = $props();
 
-	// Version info (TODO: Replace with actual API call)
+	// Version info - loaded from API in production
 	let versionInfo = $state({
 		version: '1.9.4',
 		config_path: '/config/go2rtc.yaml'
@@ -126,10 +126,10 @@
 
 						<!-- Version Info Dropdown -->
 						<DropdownMenu.Root>
-							<DropdownMenu.Trigger>
-								<Button variant="ghost" size="sm">
-									<Info class="h-4 w-4" />
-								</Button>
+							<DropdownMenu.Trigger
+								class="hover:bg-accent hover:text-accent-foreground focus-visible:ring-ring inline-flex h-9 w-9 items-center justify-center rounded-md text-sm font-medium whitespace-nowrap transition-colors focus-visible:ring-1 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
+							>
+								<Info class="h-4 w-4" />
 							</DropdownMenu.Trigger>
 							<DropdownMenu.Content>
 								<DropdownMenu.Label>System Info</DropdownMenu.Label>

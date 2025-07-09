@@ -15,10 +15,6 @@
 	let isLoading = $state(false);
 
 	// Form states
-	let tempStreamForm = $state({
-		name: '',
-		src: ''
-	});
 
 	let onvifForm = $state({
 		src: 'onvif://user:pass@192.168.1.123:80'
@@ -305,21 +301,6 @@
 		}
 	}
 
-	async function submitTempStream() {
-		if (!tempStreamForm.name || !tempStreamForm.src) {
-			alert('Please fill in both name and URL');
-			return;
-		}
-
-		try {
-			// TODO: Replace with actual API call
-			console.log('Would create temp stream:', tempStreamForm);
-			alert('Stream created successfully');
-			tempStreamForm = { name: '', src: '' };
-		} catch (error) {
-			alert('Error creating stream: ' + error);
-		}
-	}
 
 	async function submitOnvifTest() {
 		if (!onvifForm.src) {
@@ -329,7 +310,6 @@
 
 		try {
 			// TODO: Replace with actual API call
-			console.log('Would test ONVIF:', onvifForm.src);
 			loadModuleData('onvif');
 		} catch (error) {
 			alert('Error testing ONVIF: ' + error);
@@ -344,7 +324,6 @@
 
 		try {
 			// TODO: Replace with actual API call
-			console.log('Would pair HomeKit:', homeKitForm);
 			alert('HomeKit device paired successfully');
 			homeKitForm = { id: '', url: '', pin: '' };
 			loadModuleData('homekit');
@@ -361,7 +340,6 @@
 
 		try {
 			// TODO: Replace with actual API call
-			console.log('Would unpair HomeKit:', homeKitUnpairForm.id);
 			alert('HomeKit device unpaired successfully');
 			homeKitUnpairForm = { id: '' };
 			loadModuleData('homekit');
@@ -383,7 +361,6 @@
 
 		try {
 			// TODO: Replace with actual API call
-			console.log('Would login to Nest:', nestForm);
 			loadModuleData('nest');
 		} catch (error) {
 			alert('Error logging into Nest: ' + error);
@@ -398,7 +375,6 @@
 
 		try {
 			// TODO: Replace with actual API call
-			console.log('Would login to Ring with credentials:', ringCredentialsForm);
 			loadModuleData('ring');
 		} catch (error) {
 			alert('Error logging into Ring: ' + error);
@@ -413,7 +389,6 @@
 
 		try {
 			// TODO: Replace with actual API call
-			console.log('Would login to Ring with token:', ringTokenForm.refresh_token);
 			loadModuleData('ring');
 		} catch (error) {
 			alert('Error logging into Ring: ' + error);
@@ -428,7 +403,6 @@
 
 		try {
 			// TODO: Replace with actual API call
-			console.log('Would login to Roborock:', roborockForm);
 			loadModuleData('roborock');
 		} catch (error) {
 			alert('Error logging into Roborock: ' + error);
@@ -442,21 +416,6 @@
 
 <div class="space-y-6">
 	<Accordion.Root type="single">
-		<!-- Temporary Stream -->
-		<Accordion.Item value="stream">
-			<Accordion.Trigger>Temporary Stream</Accordion.Trigger>
-			<Accordion.Content>
-				<div class="flex gap-4">
-					<div class="flex-1">
-						<Input type="text" placeholder="name" bind:value={tempStreamForm.name} />
-					</div>
-					<div class="flex-1">
-						<Input type="text" placeholder="url" bind:value={tempStreamForm.src} />
-					</div>
-					<Button onclick={submitTempStream}>add</Button>
-				</div>
-			</Accordion.Content>
-		</Accordion.Item>
 
 		<!-- ALSA -->
 		<Accordion.Item value="alsa">

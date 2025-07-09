@@ -17,8 +17,6 @@
 		if (!browser) return;
 
 		try {
-			console.log(`[${streamName}] Starting Go2rtc player initialization`);
-
 			// Load the original VideoRTC implementation
 			await loadVideoRTC();
 
@@ -29,7 +27,6 @@
 
 			// Set the WebSocket source URL - use the exact pattern from original stream.html
 			const wsUrl = `/api/ws?src=${encodeURIComponent(streamName)}`;
-			console.log(`[${streamName}] Connecting to WebSocket:`, wsUrl);
 
 			// Configure the element first
 			videoElement.mode = 'webrtc,mse,hls,mjpeg'; // All supported modes
@@ -37,18 +34,15 @@
 
 			// Set up event listeners to track loading states
 			videoElement.addEventListener('loadstart', () => {
-				console.log(`[${streamName}] Video loadstart`);
 				isLoading = true;
 			});
 
 			videoElement.addEventListener('canplay', () => {
-				console.log(`[${streamName}] Video canplay`);
 				isLoading = false;
 				errorMessage = '';
 			});
 
 			videoElement.addEventListener('playing', () => {
-				console.log(`[${streamName}] Video playing`);
 				isLoading = false;
 			});
 
@@ -66,13 +60,6 @@
 
 			// Monitor connection state
 			setTimeout(() => {
-				console.log(`[${streamName}] Element state after 3s:`, {
-					wsState: videoElement.wsState,
-					pcState: videoElement.pcState,
-					connected: videoElement.isConnected,
-					hasVideo: !!videoElement.querySelector('video')
-				});
-
 				if (
 					videoElement.wsState === WebSocket.CLOSED &&
 					videoElement.pcState === WebSocket.CLOSED
@@ -103,7 +90,6 @@
 	async function loadVideoRTC() {
 		// Check if already loaded
 		if (window.customElements.get('video-stream')) {
-			console.log('video-stream custom element already registered');
 			return;
 		}
 
@@ -111,7 +97,6 @@
 			// Import the video-stream.js which will register the custom element
 			// @ts-ignore - Dynamic import of JS file from static directory
 			await import('/static/www/video-stream.js');
-			console.log('video-stream.js loaded from static files');
 
 			// Wait a moment for custom element registration
 			await new Promise((resolve) => setTimeout(resolve, 100));
@@ -124,7 +109,6 @@
 			// Fallback: try from lib directory
 			try {
 				await import('$lib/video-stream.js');
-				console.log('video-stream.js loaded from lib directory');
 			} catch (fallbackErr) {
 				console.error('Fallback import also failed:', fallbackErr);
 				throw new Error(`Could not load video-stream.js: ${err}`);

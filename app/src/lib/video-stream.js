@@ -21,7 +21,6 @@ class VideoStream extends VideoRTC {
 	 * Custom GUI
 	 */
 	oninit() {
-		console.debug('stream.oninit');
 		super.oninit();
 
 		this.innerHTML = `
@@ -52,23 +51,19 @@ class VideoStream extends VideoRTC {
 	}
 
 	onconnect() {
-		console.debug('stream.onconnect');
 		const result = super.onconnect();
 		if (result) this.divMode = 'loading';
 		return result;
 	}
 
 	ondisconnect() {
-		console.debug('stream.ondisconnect');
 		super.ondisconnect();
 	}
 
 	onopen() {
-		console.debug('stream.onopen');
 		const result = super.onopen();
 
 		this.onmessage['stream'] = (msg) => {
-			console.debug('stream.onmessge', msg);
 			switch (msg.type) {
 				case 'error':
 					this.divError = msg.value;
@@ -86,12 +81,10 @@ class VideoStream extends VideoRTC {
 	}
 
 	onclose() {
-		console.debug('stream.onclose');
 		return super.onclose();
 	}
 
 	onpcvideo(ev) {
-		console.debug('stream.onpcvideo');
 		super.onpcvideo(ev);
 
 		if (this.pcState !== WebSocket.CLOSED) {

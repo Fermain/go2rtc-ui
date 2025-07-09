@@ -168,8 +168,8 @@ export class VideoRTC extends HTMLElement {
 		this.video.play().catch(() => {
 			if (!this.video.muted) {
 				this.video.muted = true;
-				this.video.play().catch((er) => {
-					console.warn(er);
+				this.video.play().catch(() => {
+					// Silently handle autoplay failure
 				});
 			}
 		});
@@ -251,8 +251,7 @@ export class VideoRTC extends HTMLElement {
 
 		this.appendChild(this.video);
 
-		this.video.addEventListener('error', (ev) => {
-			console.warn(ev);
+		this.video.addEventListener('error', () => {
 			if (this.ws) this.ws.close(); // run reconnect for broken MSE stream
 		});
 
@@ -465,7 +464,7 @@ export class VideoRTC extends HTMLElement {
 						sb.appendBuffer(data);
 						bufLen = 0;
 					} catch (e) {
-						// console.debug(e);
+						// Ignore buffer append errors
 					}
 				}
 
@@ -482,7 +481,6 @@ export class VideoRTC extends HTMLElement {
 					}
 					const gap = end - this.video.currentTime;
 					this.video.playbackRate = gap > 0.1 ? gap : 0.1;
-					// console.debug('VideoRTC.buffered', gap, this.video.playbackRate, this.video.readyState);
 				}
 			});
 
@@ -494,12 +492,11 @@ export class VideoRTC extends HTMLElement {
 					const b = new Uint8Array(data);
 					buf.set(b, bufLen);
 					bufLen += b.byteLength;
-					// console.debug('VideoRTC.buffer', b.byteLength, bufLen);
 				} else {
 					try {
 						sb.appendBuffer(data);
 					} catch (e) {
-						// console.debug(e);
+						// Ignore buffer append errors
 					}
 				}
 			};
@@ -542,13 +539,13 @@ export class VideoRTC extends HTMLElement {
 				case 'webrtc/candidate':
 					if (this.mode.indexOf('webrtc/tcp') >= 0 && msg.value.indexOf(' udp ') > 0) return;
 
-					pc.addIceCandidate({ candidate: msg.value, sdpMid: '0' }).catch((er) => {
-						console.warn(er);
+					pc.addIceCandidate({ candidate: msg.value, sdpMid: '0' }).catch(() => {
+						// Ignore ICE candidate errors
 					});
 					break;
 				case 'webrtc/answer':
-					pc.setRemoteDescription({ type: 'answer', sdp: msg.value }).catch((er) => {
-						console.warn(er);
+					pc.setRemoteDescription({ type: 'answer', sdp: msg.value }).catch(() => {
+						// Ignore remote description errors
 					});
 					break;
 				case 'error':
@@ -578,7 +575,7 @@ export class VideoRTC extends HTMLElement {
 				});
 			}
 		} catch (e) {
-			console.warn(e);
+			// Ignore microphone access errors
 		}
 
 		for (const kind of ['video', 'audio']) {

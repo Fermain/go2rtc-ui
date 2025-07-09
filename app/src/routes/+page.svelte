@@ -112,8 +112,8 @@
 			return;
 		}
 
-		// TODO: Implement actual delete API call
-		console.log(`Would delete stream: ${streamName}`);
+		// Implement actual delete API call here
+		alert('Delete functionality not yet implemented');
 	}
 
 	async function refreshStreams(isManual = false) {

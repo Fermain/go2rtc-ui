@@ -77,7 +77,6 @@
 					return;
 				}
 			} catch (err) {
-				console.warn(`Failed to connect with ${streamMode}:`, err);
 				continue;
 			}
 		}
@@ -99,7 +98,6 @@
 					await player.load(hlsUrl);
 				} catch (err) {
 					// Fallback: try WebSocket-based HLS (like original implementation)
-					console.warn('Direct HLS failed, trying WebSocket approach:', err);
 					await tryWebSocketHLS(encodedStreamName);
 				}
 				break;
@@ -117,16 +115,6 @@
 				// MJPEG fallback - use video src directly (no Shaka needed)
 				if (videoElement) {
 					const mjpegUrl = `/api/stream.mjpeg?src=${encodedStreamName}`;
-					console.log('Trying MJPEG:', mjpegUrl);
-
-					// Set up event listeners for debugging
-					const onLoadStart = () => console.log('MJPEG: loadstart');
-					const onCanPlay = () => console.log('MJPEG: canplay');
-					const onError = (e: any) => console.error('MJPEG error:', e);
-
-					videoElement.addEventListener('loadstart', onLoadStart);
-					videoElement.addEventListener('canplay', onCanPlay);
-					videoElement.addEventListener('error', onError);
 
 					videoElement.src = mjpegUrl;
 					videoElement.load();
