@@ -11,6 +11,7 @@
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { onMount, onDestroy } from 'svelte';
 	import { browser } from '$app/environment';
+	import { useDeleteStreamMutation } from '$lib/queries/streams.js';
 
 	// Types for stream data
 	interface StreamProducer {
@@ -67,6 +68,9 @@
 	let refreshAttempts = 0;
 	const maxRefreshAttempts = 5;
 
+	// Delete mutation
+	const deleteStreamMutation = useDeleteStreamMutation();
+
 	function toggleAllSelection() {
 		if (isAllSelected) {
 			selectedStreams = new Set();
@@ -112,8 +116,15 @@
 			return;
 		}
 
-		// Implement actual delete API call here
-		alert('Delete functionality not yet implemented');
+		try {
+			await $deleteStreamMutation.mutateAsync(streamName);
+			// The mutation will automatically invalidate and refetch the streams list
+		} catch (error) {
+			console.error('Failed to delete the stream:', error);
+			alert(
+				'Failed to delete stream: ' + (error instanceof Error ? error.message : 'Unknown error')
+			);
+		}
 	}
 
 	async function refreshStreams(isManual = false) {
@@ -247,7 +258,7 @@
 			<TableBody>
 				{#if isLoading}
 					<TableRow>
-						<TableCell colspan="4" class="py-8 text-center">
+						<TableCell colspan={4} class="py-8 text-center">
 							<div class="flex items-center justify-center gap-2">
 								<div
 									class="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600"
@@ -258,7 +269,7 @@
 					</TableRow>
 				{:else if error}
 					<TableRow>
-						<TableCell colspan="4" class="py-8 text-center">
+						<TableCell colspan={4} class="py-8 text-center">
 							<div class="text-red-600">
 								<p class="font-medium">Error loading streams</p>
 								<p class="mt-1 text-sm">{error}</p>
@@ -275,7 +286,7 @@
 					</TableRow>
 				{:else if streams.length === 0}
 					<TableRow>
-						<TableCell colspan="4" class="text-muted-foreground py-8 text-center">
+						<TableCell colspan={4} class="text-muted-foreground py-8 text-center">
 							No streams configured
 						</TableCell>
 					</TableRow>

@@ -227,7 +227,11 @@
 						<div class="rounded border p-3">
 							<div class="mb-1 flex items-center justify-between">
 								<span class="font-medium">{link.name}</span>
-								<Button size="sm" variant="outline" onclick={() => link.url && copyToClipboard(link.url)}>
+								<Button
+									size="sm"
+									variant="outline"
+									onclick={() => link.url && copyToClipboard(link.url)}
+								>
 									Copy
 								</Button>
 							</div>

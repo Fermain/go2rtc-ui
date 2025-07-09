@@ -91,7 +91,7 @@
 			// Build WebSocket URL
 			const streamParam = src || dst;
 			if (!streamParam) return;
-			
+
 			const wsUrl = new URL('/api/ws', window.location.href);
 			wsUrl.searchParams.set(src ? 'src' : 'dst', streamParam);
 			wsUrl.protocol = wsUrl.protocol.replace('http', 'ws');
