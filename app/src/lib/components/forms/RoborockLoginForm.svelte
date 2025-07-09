@@ -36,29 +36,39 @@
 
 <form
 	onsubmit={handleSubmit}
-	class="flex gap-4"
+	class="space-y-3"
 	role="group"
 	aria-labelledby="roborock-login-heading"
 >
-	<div class="flex-1">
-		<Input
-			type="text"
-			placeholder="Username"
-			bind:value={formData.username}
-			{disabled}
-			aria-label="Roborock username"
-			required
-		/>
+	<div class="flex gap-4">
+		<div class="flex-1">
+			<Input
+				type="text"
+				placeholder="Username"
+				bind:value={formData.username}
+				{disabled}
+				aria-label="Roborock username"
+				required
+				minlength={3}
+				maxlength={50}
+				title="Username must be 3-50 characters"
+			/>
+		</div>
+		<div class="flex-1">
+			<Input
+				type="password"
+				placeholder="Password"
+				bind:value={formData.password}
+				{disabled}
+				aria-label="Roborock password"
+				required
+				minlength={6}
+				maxlength={100}
+				title="Password must be at least 6 characters"
+			/>
+		</div>
 	</div>
-	<div class="flex-1">
-		<Input
-			type="password"
-			placeholder="Password"
-			bind:value={formData.password}
-			{disabled}
-			aria-label="Roborock password"
-			required
-		/>
+	<div class="flex justify-end">
+		<Button type="submit" {disabled}>Login</Button>
 	</div>
-	<Button type="submit" {disabled}>Login</Button>
 </form>

@@ -39,57 +39,70 @@
 		onsubmit?.({ ...formData });
 
 		// Reset form after successful submission
-		formData = {
-			client_id: '',
-			client_secret: '',
-			refresh_token: '',
-			project_id: ''
-		};
+		formData = { client_id: '', client_secret: '', refresh_token: '', project_id: '' };
 	}
 </script>
 
-<form onsubmit={handleSubmit} class="space-y-3" role="group" aria-labelledby="nest-login-heading">
-	<div class="flex gap-4">
-		<div class="flex-1">
+<form
+	onsubmit={handleSubmit}
+	class="space-y-3"
+	role="group"
+	aria-labelledby="google-nest-login-heading"
+>
+	<div class="grid grid-cols-2 gap-4">
+		<div>
 			<Input
 				type="text"
 				placeholder="Client ID"
 				bind:value={formData.client_id}
 				{disabled}
-				aria-label="Google Cloud Client ID"
+				aria-label="Google Nest client ID"
 				required
+				minlength={10}
+				maxlength={100}
+				title="Client ID must be 10-100 characters"
 			/>
 		</div>
-		<div class="flex-1">
+		<div>
 			<Input
 				type="password"
 				placeholder="Client Secret"
 				bind:value={formData.client_secret}
 				{disabled}
-				aria-label="Google Cloud Client Secret"
+				aria-label="Google Nest client secret"
 				required
+				minlength={10}
+				maxlength={100}
+				title="Client secret must be 10-100 characters"
 			/>
 		</div>
 	</div>
-	<div class="flex gap-4">
-		<div class="flex-1">
+	<div class="grid grid-cols-2 gap-4">
+		<div>
 			<Input
-				type="password"
+				type="text"
 				placeholder="Refresh Token"
 				bind:value={formData.refresh_token}
 				{disabled}
-				aria-label="Google Cloud Refresh Token"
+				aria-label="Google Nest refresh token"
 				required
+				minlength={10}
+				maxlength={200}
+				title="Refresh token must be 10-200 characters"
 			/>
 		</div>
-		<div class="flex-1">
+		<div>
 			<Input
 				type="text"
 				placeholder="Project ID"
 				bind:value={formData.project_id}
 				{disabled}
-				aria-label="Google Cloud Project ID"
+				aria-label="Google Nest project ID"
 				required
+				minlength={5}
+				maxlength={50}
+				pattern="[a-zA-Z0-9-]+"
+				title="Project ID: letters, numbers, and hyphens only (5-50 chars)"
 			/>
 		</div>
 	</div>

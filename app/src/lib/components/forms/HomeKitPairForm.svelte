@@ -46,16 +46,23 @@
 				{disabled}
 				aria-label="Stream ID"
 				required
+				minlength={1}
+				maxlength={50}
+				pattern="[a-zA-Z0-9_-]+"
+				title="Only letters, numbers, underscores, and hyphens allowed"
 			/>
 		</div>
 		<div class="flex-1">
 			<Input
-				type="text"
-				placeholder="HomeKit URL"
+				type="url"
+				placeholder="http://192.168.1.100:8080"
 				bind:value={formData.url}
 				{disabled}
 				aria-label="HomeKit URL"
 				required
+				minlength={10}
+				maxlength={200}
+				title="Must be a valid HTTP or HTTPS URL"
 			/>
 		</div>
 	</div>
@@ -63,11 +70,14 @@
 		<div class="flex-1">
 			<Input
 				type="text"
-				placeholder="HomeKit PIN"
+				placeholder="123-45-678"
 				bind:value={formData.pin}
 				{disabled}
 				aria-label="HomeKit PIN"
 				required
+				pattern="[0-9]{3}-[0-9]{2}-[0-9]{3}"
+				maxlength={11}
+				title="Format: 123-45-678"
 			/>
 		</div>
 		<Button type="submit" {disabled}>Pair</Button>

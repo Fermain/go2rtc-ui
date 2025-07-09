@@ -51,6 +51,8 @@
 				{disabled}
 				aria-label="Ring account email"
 				required
+				maxlength={100}
+				title="Must be a valid email address"
 			/>
 		</div>
 		<div class="flex-1">
@@ -61,6 +63,9 @@
 				{disabled}
 				aria-label="Ring account password"
 				required
+				minlength={6}
+				maxlength={100}
+				title="Password must be at least 6 characters"
 			/>
 		</div>
 	</div>
@@ -72,6 +77,9 @@
 				bind:value={formData.code}
 				{disabled}
 				aria-label="Two-factor authentication code"
+				pattern="[0-9]{6}"
+				maxlength={6}
+				title="6-digit numeric code"
 			/>
 		</div>
 		<Button type="submit" {disabled}>Login</Button>

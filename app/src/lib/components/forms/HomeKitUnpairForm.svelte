@@ -21,7 +21,7 @@
 		event.preventDefault();
 
 		if (!formData.id) {
-			alert('Please provide a Stream ID');
+			alert('Please enter stream ID');
 			return;
 		}
 
@@ -46,6 +46,10 @@
 			{disabled}
 			aria-label="Stream ID"
 			required
+			minlength={1}
+			maxlength={50}
+			pattern="[a-zA-Z0-9_-]+"
+			title="Only letters, numbers, underscores, and hyphens allowed"
 		/>
 	</div>
 	<Button type="submit" {disabled}>Unpair</Button>

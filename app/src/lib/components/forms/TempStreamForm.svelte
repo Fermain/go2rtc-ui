@@ -43,16 +43,24 @@
 			{disabled}
 			aria-label="Stream name"
 			required
+			minlength={1}
+			maxlength={50}
+			pattern="[a-zA-Z0-9_-]+"
+			title="Only letters, numbers, underscores, and hyphens allowed"
 		/>
 	</div>
 	<div class="flex-1">
 		<Input
-			type="text"
-			placeholder="Stream URL"
+			type="url"
+			placeholder="rtsp://user:pass@host:port/path"
 			bind:value={formData.src}
 			{disabled}
 			aria-label="Stream URL"
 			required
+			minlength={10}
+			maxlength={500}
+			pattern="(rtsp|rtmp|http|https|ffmpeg|onvif)://.*"
+			title="Must be a valid stream URL (rtsp://, rtmp://, http://, etc.)"
 		/>
 	</div>
 	<Button type="submit" {disabled}>Add</Button>

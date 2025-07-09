@@ -32,12 +32,16 @@
 <form onsubmit={handleSubmit} class="flex gap-4" role="group" aria-labelledby="onvif-test-heading">
 	<div class="flex-1">
 		<Input
-			type="text"
+			type="url"
 			placeholder="onvif://user:pass@192.168.1.123:80"
 			bind:value={formData.src}
 			{disabled}
 			aria-label="ONVIF URL"
 			required
+			minlength={15}
+			maxlength={200}
+			pattern="onvif://.*"
+			title="Must start with onvif://"
 		/>
 	</div>
 	<Button type="submit" {disabled}>Test</Button>

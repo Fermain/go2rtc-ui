@@ -21,7 +21,7 @@
 		event.preventDefault();
 
 		if (!formData.refresh_token) {
-			alert('Please provide a refresh token');
+			alert('Please enter refresh token');
 			return;
 		}
 
@@ -35,12 +35,15 @@
 <form onsubmit={handleSubmit} class="flex gap-4" role="group" aria-labelledby="ring-token-heading">
 	<div class="flex-1">
 		<Input
-			type="password"
+			type="text"
 			placeholder="Refresh Token"
 			bind:value={formData.refresh_token}
 			{disabled}
 			aria-label="Ring refresh token"
 			required
+			minlength={20}
+			maxlength={500}
+			title="Refresh token must be at least 20 characters"
 		/>
 	</div>
 	<Button type="submit" {disabled}>Login</Button>

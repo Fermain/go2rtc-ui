@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button';
-	import { Input } from '$lib/components/ui/input';
 	import {
 		Table,
 		TableBody,
@@ -10,51 +9,19 @@
 		TableRow
 	} from '$lib/components/ui/table';
 	import * as Accordion from '$lib/components/ui/accordion';
+	import {
+		TempStreamForm,
+		OnvifTestForm,
+		HomeKitPairForm,
+		HomeKitUnpairForm,
+		GoogleNestLoginForm,
+		RingCredentialsLoginForm,
+		RingTokenLoginForm,
+		RoborockLoginForm
+	} from '$lib/components/forms';
 
 	// Loading state
 	let isLoading = $state(false);
-
-	// Form states
-	let tempStreamForm = $state({
-		name: '',
-		src: ''
-	});
-
-	let onvifForm = $state({
-		src: 'onvif://user:pass@192.168.1.123:80'
-	});
-
-	let homeKitForm = $state({
-		id: '',
-		url: '',
-		pin: ''
-	});
-
-	let homeKitUnpairForm = $state({
-		id: ''
-	});
-
-	let nestForm = $state({
-		client_id: '',
-		client_secret: '',
-		refresh_token: '',
-		project_id: ''
-	});
-
-	let ringCredentialsForm = $state({
-		email: '',
-		password: '',
-		code: ''
-	});
-
-	let ringTokenForm = $state({
-		refresh_token: ''
-	});
-
-	let roborockForm = $state({
-		username: '',
-		password: ''
-	});
 
 	// Table data states
 	let alsaData = $state<any[]>([]);
@@ -71,283 +38,135 @@
 	let v4l2Data = $state<any[]>([]);
 	let webTorrentData = $state<any[]>([]);
 
-	// Helper functions
-	function loadModuleDataOnExpand(module: string) {
-		loadModuleData(module);
+	// API helper functions
+	async function fetchModuleData(endpoint: string) {
+		const response = await fetch(endpoint, { cache: 'no-cache' });
+		if (!response.ok) {
+			throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+		}
+		return response.json();
 	}
 
 	async function loadModuleData(module: string) {
 		isLoading = true;
 		try {
-			// TODO: Replace with actual API calls to match original implementation
-			// Original endpoints: api/alsa, api/dvrip, api/ffmpeg/devices, etc.
-			// For now, simulate loading with dummy data
-			await new Promise((resolve) => setTimeout(resolve, 500));
+			const data = await fetchModuleData(`/api/${module}`);
 
 			switch (module) {
 				case 'alsa':
-					alsaData = [
-						{
-							id: 'default',
-							name: 'Default Audio Device',
-							info: 'ALSA PCM',
-							url: 'alsa://default',
-							location: 'local'
-						},
-						{
-							id: 'hw:0,0',
-							name: 'Built-in Audio',
-							info: 'Hardware device',
-							url: 'alsa://hw:0,0',
-							location: 'local'
-						}
-					];
+					alsaData = data.sources || [];
 					break;
 				case 'dvrip':
-					dvripData = [
-						{
-							id: 'cam1',
-							name: 'DVR Camera 1',
-							info: 'DVRIP Device',
-							url: 'dvrip://192.168.1.200',
-							location: 'network'
-						},
-						{
-							id: 'cam2',
-							name: 'DVR Camera 2',
-							info: 'DVRIP Device',
-							url: 'dvrip://192.168.1.201',
-							location: 'network'
-						}
-					];
+					dvripData = data.sources || [];
+					break;
+				case 'ffmpeg/devices':
+					devicesData = data.sources || [];
+					break;
+				case 'ffmpeg/hardware':
+					hardwareData = data.sources || [];
 					break;
 				case 'homekit':
-					homeKitData = [
-						{
-							id: 'camera1',
-							name: 'HomeKit Camera',
-							info: 'status=1',
-							url: 'homekit://...',
-							location: 'network'
-						}
-					];
-					break;
-				case 'ffmpeg-devices':
-					devicesData = [
-						{
-							id: 'video0',
-							name: 'USB Camera',
-							info: 'Video4Linux2',
-							url: 'ffmpeg:device?video=/dev/video0',
-							location: 'local'
-						},
-						{
-							id: 'video1',
-							name: 'Webcam',
-							info: 'Video4Linux2',
-							url: 'ffmpeg:device?video=/dev/video1',
-							location: 'local'
-						}
-					];
-					break;
-				case 'ffmpeg-hardware':
-					hardwareData = [
-						{
-							id: 'vaapi',
-							name: 'Intel VAAPI',
-							info: 'Hardware acceleration',
-							url: 'ffmpeg:device?hwaccel=vaapi',
-							location: 'local'
-						},
-						{
-							id: 'nvenc',
-							name: 'NVIDIA NVENC',
-							info: 'Hardware acceleration',
-							url: 'ffmpeg:device?hwaccel=nvenc',
-							location: 'local'
-						}
-					];
+					homeKitData = data.sources || [];
 					break;
 				case 'nest':
-					nestData = [
-						{
-							id: 'nest1',
-							name: 'Front Door Camera',
-							info: 'Nest Cam',
-							url: 'nest://device123',
-							location: 'network'
-						},
-						{
-							id: 'nest2',
-							name: 'Backyard Camera',
-							info: 'Nest Cam',
-							url: 'nest://device456',
-							location: 'network'
-						}
-					];
+					nestData = data.sources || [];
 					break;
 				case 'ring':
-					ringData = [
-						{
-							id: 'ring1',
-							name: 'Ring Doorbell',
-							info: 'Doorbell Pro',
-							url: 'ring://doorbell123',
-							location: 'network'
-						},
-						{
-							id: 'ring2',
-							name: 'Ring Camera',
-							info: 'Stick Up Cam',
-							url: 'ring://camera456',
-							location: 'network'
-						}
-					];
+					ringData = data.sources || [];
 					break;
 				case 'gopro':
-					goProData = [
-						{
-							id: 'gopro1',
-							name: 'GoPro Hero 11',
-							info: 'WiFi Connected',
-							url: 'gopro://192.168.1.100',
-							location: 'network'
-						},
-						{
-							id: 'gopro2',
-							name: 'GoPro Hero 10',
-							info: 'WiFi Connected',
-							url: 'gopro://192.168.1.101',
-							location: 'network'
-						}
-					];
+					goProData = data.sources || [];
 					break;
 				case 'hass':
-					hassData = [
-						{
-							id: 'hass1',
-							name: 'Security Camera',
-							info: 'Home Assistant',
-							url: 'hass://camera.security',
-							location: 'network'
-						},
-						{
-							id: 'hass2',
-							name: 'Doorbell Camera',
-							info: 'Home Assistant',
-							url: 'hass://camera.doorbell',
-							location: 'network'
-						}
-					];
+					hassData = data.sources || [];
 					break;
 				case 'onvif':
-					onvifData = [
-						{
-							id: 'onvif1',
-							name: 'ONVIF Camera 1',
-							info: 'PTZ Camera',
-							url: 'onvif://192.168.1.150',
-							location: 'network'
-						},
-						{
-							id: 'onvif2',
-							name: 'ONVIF Camera 2',
-							info: 'Fixed Camera',
-							url: 'onvif://192.168.1.151',
-							location: 'network'
-						}
-					];
+					onvifData = data.sources || [];
 					break;
 				case 'roborock':
-					roborockData = [
-						{
-							id: 'roborock1',
-							name: 'Roborock S7',
-							info: 'Vacuum Camera',
-							url: 'roborock://vacuum123',
-							location: 'network'
-						}
-					];
+					roborockData = data.sources || [];
 					break;
 				case 'v4l2':
-					v4l2Data = [
-						{
-							id: 'video0',
-							name: 'USB Webcam',
-							info: 'UVC Camera',
-							url: 'v4l2:///dev/video0',
-							location: 'local'
-						},
-						{
-							id: 'video1',
-							name: 'Internal Camera',
-							info: 'Built-in Camera',
-							url: 'v4l2:///dev/video1',
-							location: 'local'
-						}
-					];
+					v4l2Data = data.sources || [];
 					break;
 				case 'webtorrent':
-					webTorrentData = [
-						{
-							id: 'torrent1',
-							name: 'Shared Camera Feed',
-							info: 'WebTorrent Stream',
-							url: 'webtorrent://magnet:?xt=...',
-							location: 'network'
-						}
-					];
+					webTorrentData = data.sources || [];
 					break;
 			}
 		} catch (error) {
-			console.error('Failed to load module data:', error);
+			console.error(`Failed to load ${module} data:`, error);
+			// Set error state for the specific module
+			switch (module) {
+				case 'alsa':
+					alsaData = [];
+					break;
+				case 'dvrip':
+					dvripData = [];
+					break;
+				case 'ffmpeg/devices':
+					devicesData = [];
+					break;
+				case 'ffmpeg/hardware':
+					hardwareData = [];
+					break;
+				case 'homekit':
+					homeKitData = [];
+					break;
+				case 'nest':
+					nestData = [];
+					break;
+				case 'ring':
+					ringData = [];
+					break;
+				case 'gopro':
+					goProData = [];
+					break;
+				case 'hass':
+					hassData = [];
+					break;
+				case 'onvif':
+					onvifData = [];
+					break;
+				case 'roborock':
+					roborockData = [];
+					break;
+				case 'v4l2':
+					v4l2Data = [];
+					break;
+				case 'webtorrent':
+					webTorrentData = [];
+					break;
+			}
 		} finally {
 			isLoading = false;
 		}
 	}
 
-	async function submitTempStream() {
-		if (!tempStreamForm.name || !tempStreamForm.src) {
-			alert('Please fill in both name and URL');
-			return;
-		}
-
+	// Form submit handlers
+	async function handleTempStream(data: { name: string; src: string }) {
 		try {
-			// Create the API URL matching the original implementation
 			const url = new URL('/api/streams', window.location.origin);
-			url.searchParams.set('name', tempStreamForm.name);
-			url.searchParams.set('src', tempStreamForm.src);
+			url.searchParams.set('name', data.name);
+			url.searchParams.set('src', data.src);
 
 			const response = await fetch(url, { method: 'PUT' });
 			const result = response.ok
 				? 'Stream added successfully'
 				: 'ERROR: ' + (await response.text());
 			alert(result);
-
-			if (response.ok) {
-				tempStreamForm = { name: '', src: '' };
-			}
 		} catch (error) {
 			alert('Error creating stream: ' + error);
 		}
 	}
 
-	async function submitOnvifTest() {
-		if (!onvifForm.src) {
-			alert('Please enter ONVIF URL');
-			return;
-		}
-
+	async function handleOnvifTest(data: { src: string }) {
 		try {
-			// Match original implementation: send as URL parameter
 			const url = new URL('/api/onvif', window.location.origin);
-			url.searchParams.set('src', onvifForm.src);
+			url.searchParams.set('src', data.src);
 
 			const response = await fetch(url.toString());
 			if (response.ok) {
-				const data = await response.json();
-				// TODO: Process the response data and update onvifData
-				console.log('ONVIF test response:', data);
+				await loadModuleData('onvif');
 			} else {
 				alert('Error testing ONVIF: ' + (await response.text()));
 			}
@@ -356,17 +175,11 @@
 		}
 	}
 
-	async function submitHomeKitPair() {
-		if (!homeKitForm.id || !homeKitForm.url || !homeKitForm.pin) {
-			alert('Please fill in all fields');
-			return;
-		}
-
+	async function handleHomeKitPair(data: { id: string; url: string; pin: string }) {
 		try {
-			// Match original implementation: append pin to url and send as FormData
 			const formData = new FormData();
-			formData.set('id', homeKitForm.id);
-			formData.set('url', homeKitForm.url + '&pin=' + homeKitForm.pin);
+			formData.set('id', data.id);
+			formData.set('url', data.url + '&pin=' + data.pin);
 
 			const response = await fetch('/api/homekit', { method: 'POST', body: formData });
 			const result = response.ok
@@ -375,24 +188,17 @@
 			alert(result);
 
 			if (response.ok) {
-				homeKitForm = { id: '', url: '', pin: '' };
-				loadModuleData('homekit');
+				await loadModuleData('homekit');
 			}
 		} catch (error) {
 			alert('Error pairing HomeKit: ' + error);
 		}
 	}
 
-	async function submitHomeKitUnpair() {
-		if (!homeKitUnpairForm.id) {
-			alert('Please enter stream ID');
-			return;
-		}
-
+	async function handleHomeKitUnpair(data: { id: string }) {
 		try {
-			// Match original implementation: send as FormData with DELETE method
 			const formData = new FormData();
-			formData.set('id', homeKitUnpairForm.id);
+			formData.set('id', data.id);
 
 			const response = await fetch('/api/homekit', { method: 'DELETE', body: formData });
 			const result = response.ok
@@ -401,96 +207,105 @@
 			alert(result);
 
 			if (response.ok) {
-				homeKitUnpairForm = { id: '' };
-				loadModuleData('homekit');
+				await loadModuleData('homekit');
 			}
 		} catch (error) {
 			alert('Error unpairing HomeKit: ' + error);
 		}
 	}
 
-	async function submitNest() {
-		if (
-			!nestForm.client_id ||
-			!nestForm.client_secret ||
-			!nestForm.refresh_token ||
-			!nestForm.project_id
-		) {
-			alert('Please fill in all fields');
-			return;
-		}
-
+	async function handleNestLogin(data: {
+		client_id: string;
+		client_secret: string;
+		refresh_token: string;
+		project_id: string;
+	}) {
 		try {
-			// TODO: Replace with actual API call
-			loadModuleData('nest');
+			const query = new URLSearchParams(data);
+			const url = new URL('/api/nest?' + query.toString(), window.location.origin);
+
+			const response = await fetch(url, { cache: 'no-cache' });
+			if (response.ok) {
+				await loadModuleData('nest');
+			} else {
+				const errorData = await response.json();
+				alert('Error: ' + (errorData.error || 'Unknown error'));
+			}
 		} catch (error) {
 			alert('Error logging into Nest: ' + error);
 		}
 	}
 
-	async function submitRingCredentials() {
-		if (!ringCredentialsForm.email || !ringCredentialsForm.password) {
-			alert('Please enter email and password');
-			return;
-		}
-
+	async function handleRingCredentials(data: { email: string; password: string; code?: string }) {
 		try {
-			// Match original implementation: send as URL parameters
 			const query = new URLSearchParams();
-			query.set('email', ringCredentialsForm.email);
-			query.set('password', ringCredentialsForm.password);
-			if (ringCredentialsForm.code) {
-				query.set('code', ringCredentialsForm.code);
+			query.set('email', data.email);
+			query.set('password', data.password);
+			if (data.code) {
+				query.set('code', data.code);
 			}
 
 			const url = new URL('/api/ring?' + query.toString(), window.location.origin);
 			const response = await fetch(url, { cache: 'no-cache' });
-			const data = await response.json();
+			const responseData = await response.json();
 
-			if (data.needs_2fa) {
-				alert(data.prompt || 'Enter 2FA code and submit again');
+			if (responseData.needs_2fa) {
+				alert(responseData.prompt || 'Enter 2FA code and submit again');
 				return;
 			}
 
 			if (!response.ok) {
-				alert('Error: ' + (data.error || 'Unknown error'));
+				alert('Error: ' + (responseData.error || 'Unknown error'));
 				return;
 			}
 
-			// TODO: Process the response data and update ringData
-			console.log('Ring login response:', data);
-			loadModuleData('ring');
+			await loadModuleData('ring');
 		} catch (error) {
 			alert('Error logging into Ring: ' + error);
 		}
 	}
 
-	async function submitRingToken() {
-		if (!ringTokenForm.refresh_token) {
-			alert('Please enter refresh token');
-			return;
-		}
-
+	async function handleRingToken(data: { refresh_token: string }) {
 		try {
-			// TODO: Replace with actual API call
-			loadModuleData('ring');
+			const query = new URLSearchParams(data);
+			const url = new URL('/api/ring?' + query.toString(), window.location.origin);
+
+			const response = await fetch(url, { cache: 'no-cache' });
+			if (response.ok) {
+				await loadModuleData('ring');
+			} else {
+				const errorData = await response.json();
+				alert('Error: ' + (errorData.error || 'Unknown error'));
+			}
 		} catch (error) {
 			alert('Error logging into Ring: ' + error);
 		}
 	}
 
-	async function submitRoborock() {
-		if (!roborockForm.username || !roborockForm.password) {
-			alert('Please enter username and password');
-			return;
-		}
-
+	async function handleRoborockLogin(data: { username: string; password: string }) {
 		try {
-			// TODO: Replace with actual API call
-			loadModuleData('roborock');
+			const formData = new FormData();
+			formData.set('username', data.username);
+			formData.set('password', data.password);
+
+			const response = await fetch('/api/roborock', { method: 'POST', body: formData });
+			if (response.ok) {
+				await loadModuleData('roborock');
+			} else {
+				const errorData = await response.json();
+				alert('Error: ' + (errorData.error || 'Unknown error'));
+			}
 		} catch (error) {
 			alert('Error logging into Roborock: ' + error);
 		}
+	}
+
+	// Table rendering helper
+	function renderTable(data: any[]) {
+		if (!data || data.length === 0) {
+			return []; // Return empty array for consistent rendering
+		}
+		return data;
 	}
 </script>
 
@@ -504,35 +319,15 @@
 		<Accordion.Item value="stream">
 			<Accordion.Trigger>Temporary Stream</Accordion.Trigger>
 			<Accordion.Content>
-				<div class="flex gap-4">
-					<div class="flex-1">
-						<Input
-							type="text"
-							placeholder="name"
-							bind:value={tempStreamForm.name}
-							required
-							minlength={1}
-							maxlength={50}
-						/>
-					</div>
-					<div class="flex-1">
-						<Input
-							type="url"
-							placeholder="rtsp://user:pass@host:port/path"
-							bind:value={tempStreamForm.src}
-							required
-						/>
-					</div>
-					<Button onclick={submitTempStream}>add</Button>
-				</div>
+				<TempStreamForm onsubmit={handleTempStream} />
 			</Accordion.Content>
 		</Accordion.Item>
 
 		<!-- ALSA -->
 		<Accordion.Item value="alsa">
-			<Accordion.Trigger onclick={() => loadModuleDataOnExpand('alsa')}
-				>ALSA (Linux Audio)</Accordion.Trigger
-			>
+			<Accordion.Trigger onclick={() => loadModuleData('alsa')}>
+				ALSA (Linux Audio)
+			</Accordion.Trigger>
 			<Accordion.Content>
 				{#if isLoading}
 					<div class="p-4 text-center">Loading...</div>
@@ -548,14 +343,12 @@
 							</TableRow>
 						</TableHeader>
 						<TableBody>
-							{#each alsaData as item}
+							{#each renderTable(alsaData) as item}
 								<TableRow>
 									<TableCell>{item.id}</TableCell>
 									<TableCell>{item.name}</TableCell>
 									<TableCell>{item.info}</TableCell>
-									<TableCell style="word-break: break-word; white-space: normal;"
-										>{item.url}</TableCell
-									>
+									<TableCell class="break-words">{item.url}</TableCell>
 									<TableCell>{item.location}</TableCell>
 								</TableRow>
 							{/each}
@@ -567,54 +360,20 @@
 
 		<!-- Apple HomeKit -->
 		<Accordion.Item value="homekit">
-			<Accordion.Trigger onclick={() => loadModuleDataOnExpand('homekit')}
-				>Apple HomeKit</Accordion.Trigger
-			>
+			<Accordion.Trigger onclick={() => loadModuleData('homekit')}>Apple HomeKit</Accordion.Trigger>
 			<Accordion.Content>
 				<div class="space-y-4">
-					<div class="flex gap-4">
-						<Input
-							type="text"
-							placeholder="stream id"
-							bind:value={homeKitForm.id}
-							class="w-48"
-							required
-							minlength={1}
-							maxlength={50}
-						/>
-						<Input
-							type="url"
-							placeholder="http://192.168.1.100:8080"
-							bind:value={homeKitForm.url}
-							class="w-80"
-							required
-						/>
-						<Input
-							type="text"
-							placeholder="pin"
-							bind:value={homeKitForm.pin}
-							class="w-24"
-							required
-							pattern="[0-9]{3}-[0-9]{2}-[0-9]{3}"
-							title="Format: 123-45-678"
-						/>
-						<Button onclick={submitHomeKitPair}>Pair</Button>
+					<div>
+						<h4 class="mb-2 font-medium">Pair Device</h4>
+						<HomeKitPairForm onsubmit={handleHomeKitPair} />
 					</div>
-
-					<div class="flex gap-4">
-						<Input
-							type="text"
-							placeholder="stream id"
-							bind:value={homeKitUnpairForm.id}
-							class="w-48"
-							required
-							minlength={1}
-							maxlength={50}
-						/>
-						<Button onclick={submitHomeKitUnpair}>Unpair</Button>
+					<div>
+						<h4 class="mb-2 font-medium">Unpair Device</h4>
+						<HomeKitUnpairForm onsubmit={handleHomeKitUnpair} />
 					</div>
-
-					{#if homeKitData.length > 0}
+					{#if isLoading}
+						<div class="p-4 text-center">Loading...</div>
+					{:else}
 						<Table>
 							<TableHeader>
 								<TableRow>
@@ -623,26 +382,16 @@
 									<TableHead>Info</TableHead>
 									<TableHead>URL</TableHead>
 									<TableHead>Location</TableHead>
-									<TableHead>Actions</TableHead>
 								</TableRow>
 							</TableHeader>
 							<TableBody>
-								{#each homeKitData as item}
+								{#each renderTable(homeKitData) as item}
 									<TableRow>
 										<TableCell>{item.id}</TableCell>
 										<TableCell>{item.name}</TableCell>
 										<TableCell>{item.info}</TableCell>
-										<TableCell style="word-break: break-word; white-space: normal;"
-											>{item.url}</TableCell
-										>
+										<TableCell class="break-words">{item.url}</TableCell>
 										<TableCell>{item.location}</TableCell>
-										<TableCell>
-											{#if item.info.includes('status=1')}
-												<button class="text-blue-600 hover:underline">pair</button>
-											{:else if item.url}
-												<button class="text-blue-600 hover:underline">unpair</button>
-											{/if}
-										</TableCell>
 									</TableRow>
 								{/each}
 							</TableBody>
@@ -654,7 +403,7 @@
 
 		<!-- DVRIP -->
 		<Accordion.Item value="dvrip">
-			<Accordion.Trigger onclick={() => loadModuleDataOnExpand('dvrip')}>DVRIP</Accordion.Trigger>
+			<Accordion.Trigger onclick={() => loadModuleData('dvrip')}>DVRIP</Accordion.Trigger>
 			<Accordion.Content>
 				{#if isLoading}
 					<div class="p-4 text-center">Loading...</div>
@@ -670,14 +419,12 @@
 							</TableRow>
 						</TableHeader>
 						<TableBody>
-							{#each dvripData as item}
+							{#each renderTable(dvripData) as item}
 								<TableRow>
 									<TableCell>{item.id}</TableCell>
 									<TableCell>{item.name}</TableCell>
 									<TableCell>{item.info}</TableCell>
-									<TableCell style="word-break: break-word; white-space: normal;"
-										>{item.url}</TableCell
-									>
+									<TableCell class="break-words">{item.url}</TableCell>
 									<TableCell>{item.location}</TableCell>
 								</TableRow>
 							{/each}
@@ -687,94 +434,85 @@
 			</Accordion.Content>
 		</Accordion.Item>
 
-		<!-- ONVIF -->
-		<Accordion.Item value="onvif">
-			<Accordion.Trigger onclick={() => loadModuleDataOnExpand('onvif')}>ONVIF</Accordion.Trigger>
+		<!-- FFmpeg Devices -->
+		<Accordion.Item value="ffmpeg-devices">
+			<Accordion.Trigger onclick={() => loadModuleData('ffmpeg/devices')}>
+				FFmpeg Devices (USB)
+			</Accordion.Trigger>
 			<Accordion.Content>
-				<div class="space-y-4">
-					<div class="flex gap-4">
-						<Input
-							type="url"
-							placeholder="onvif://user:pass@192.168.1.123:80"
-							bind:value={onvifForm.src}
-							class="flex-1"
-							required
-							pattern="onvif://.*"
-							title="Must start with onvif://"
-						/>
-						<Button onclick={submitOnvifTest}>test</Button>
-					</div>
-
-					{#if onvifData.length > 0}
-						<Table>
-							<TableHeader>
+				{#if isLoading}
+					<div class="p-4 text-center">Loading...</div>
+				{:else}
+					<Table>
+						<TableHeader>
+							<TableRow>
+								<TableHead>ID</TableHead>
+								<TableHead>Name</TableHead>
+								<TableHead>Info</TableHead>
+								<TableHead>URL</TableHead>
+								<TableHead>Location</TableHead>
+							</TableRow>
+						</TableHeader>
+						<TableBody>
+							{#each renderTable(devicesData) as item}
 								<TableRow>
-									<TableHead>ID</TableHead>
-									<TableHead>Name</TableHead>
-									<TableHead>Info</TableHead>
-									<TableHead>URL</TableHead>
-									<TableHead>Location</TableHead>
+									<TableCell>{item.id}</TableCell>
+									<TableCell>{item.name}</TableCell>
+									<TableCell>{item.info}</TableCell>
+									<TableCell class="break-words">{item.url}</TableCell>
+									<TableCell>{item.location}</TableCell>
 								</TableRow>
-							</TableHeader>
-							<TableBody>
-								{#each onvifData as item}
-									<TableRow>
-										<TableCell>{item.id}</TableCell>
-										<TableCell>{item.name}</TableCell>
-										<TableCell>{item.info}</TableCell>
-										<TableCell style="word-break: break-word; white-space: normal;"
-											>{item.url}</TableCell
-										>
-										<TableCell>{item.location}</TableCell>
-									</TableRow>
-								{/each}
-							</TableBody>
-						</Table>
-					{/if}
-				</div>
+							{/each}
+						</TableBody>
+					</Table>
+				{/if}
+			</Accordion.Content>
+		</Accordion.Item>
+
+		<!-- FFmpeg Hardware -->
+		<Accordion.Item value="ffmpeg-hardware">
+			<Accordion.Trigger onclick={() => loadModuleData('ffmpeg/hardware')}>
+				FFmpeg Hardware
+			</Accordion.Trigger>
+			<Accordion.Content>
+				{#if isLoading}
+					<div class="p-4 text-center">Loading...</div>
+				{:else}
+					<Table>
+						<TableHeader>
+							<TableRow>
+								<TableHead>ID</TableHead>
+								<TableHead>Name</TableHead>
+								<TableHead>Info</TableHead>
+								<TableHead>URL</TableHead>
+								<TableHead>Location</TableHead>
+							</TableRow>
+						</TableHeader>
+						<TableBody>
+							{#each renderTable(hardwareData) as item}
+								<TableRow>
+									<TableCell>{item.id}</TableCell>
+									<TableCell>{item.name}</TableCell>
+									<TableCell>{item.info}</TableCell>
+									<TableCell class="break-words">{item.url}</TableCell>
+									<TableCell>{item.location}</TableCell>
+								</TableRow>
+							{/each}
+						</TableBody>
+					</Table>
+				{/if}
 			</Accordion.Content>
 		</Accordion.Item>
 
 		<!-- Google Nest -->
 		<Accordion.Item value="nest">
-			<Accordion.Trigger onclick={() => loadModuleDataOnExpand('nest')}
-				>Google Nest</Accordion.Trigger
-			>
+			<Accordion.Trigger onclick={() => loadModuleData('nest')}>Google Nest</Accordion.Trigger>
 			<Accordion.Content>
 				<div class="space-y-4">
-					<div class="flex gap-4">
-						<Input
-							type="text"
-							placeholder="client_id"
-							bind:value={nestForm.client_id}
-							required
-							minlength={10}
-						/>
-						<Input
-							type="password"
-							placeholder="client_secret"
-							bind:value={nestForm.client_secret}
-							required
-							minlength={10}
-						/>
-						<Input
-							type="text"
-							placeholder="refresh_token"
-							bind:value={nestForm.refresh_token}
-							required
-							minlength={10}
-						/>
-						<Input
-							type="text"
-							placeholder="project_id"
-							bind:value={nestForm.project_id}
-							required
-							minlength={5}
-						/>
-						<Button onclick={submitNest}>Login</Button>
-					</div>
-
-					{#if nestData.length > 0}
+					<GoogleNestLoginForm onsubmit={handleNestLogin} />
+					{#if isLoading}
+						<div class="p-4 text-center">Loading...</div>
+					{:else}
 						<Table>
 							<TableHeader>
 								<TableRow>
@@ -786,14 +524,12 @@
 								</TableRow>
 							</TableHeader>
 							<TableBody>
-								{#each nestData as item}
+								{#each renderTable(nestData) as item}
 									<TableRow>
 										<TableCell>{item.id}</TableCell>
 										<TableCell>{item.name}</TableCell>
 										<TableCell>{item.info}</TableCell>
-										<TableCell style="word-break: break-word; white-space: normal;"
-											>{item.url}</TableCell
-										>
+										<TableCell class="break-words">{item.url}</TableCell>
 										<TableCell>{item.location}</TableCell>
 									</TableRow>
 								{/each}
@@ -806,46 +542,20 @@
 
 		<!-- Ring -->
 		<Accordion.Item value="ring">
-			<Accordion.Trigger onclick={() => loadModuleDataOnExpand('ring')}>Ring</Accordion.Trigger>
+			<Accordion.Trigger onclick={() => loadModuleData('ring')}>Ring</Accordion.Trigger>
 			<Accordion.Content>
 				<div class="space-y-4">
-					<div class="flex gap-4">
-						<Input
-							type="email"
-							placeholder="email"
-							bind:value={ringCredentialsForm.email}
-							required
-						/>
-						<Input
-							type="password"
-							placeholder="password"
-							bind:value={ringCredentialsForm.password}
-							required
-							minlength={6}
-						/>
-						<Input
-							type="text"
-							placeholder="2FA code (optional)"
-							bind:value={ringCredentialsForm.code}
-							pattern="[0-9]{6}"
-							title="6-digit code"
-						/>
-						<Button onclick={submitRingCredentials}>Login</Button>
+					<div>
+						<h4 class="mb-2 font-medium">Login with Credentials</h4>
+						<RingCredentialsLoginForm onsubmit={handleRingCredentials} />
 					</div>
-
-					<div class="flex gap-4">
-						<Input
-							type="text"
-							placeholder="refresh_token"
-							bind:value={ringTokenForm.refresh_token}
-							class="flex-1"
-							required
-							minlength={20}
-						/>
-						<Button onclick={submitRingToken}>Login</Button>
+					<div>
+						<h4 class="mb-2 font-medium">Login with Token</h4>
+						<RingTokenLoginForm onsubmit={handleRingToken} />
 					</div>
-
-					{#if ringData.length > 0}
+					{#if isLoading}
+						<div class="p-4 text-center">Loading...</div>
+					{:else}
 						<Table>
 							<TableHeader>
 								<TableRow>
@@ -857,14 +567,114 @@
 								</TableRow>
 							</TableHeader>
 							<TableBody>
-								{#each ringData as item}
+								{#each renderTable(ringData) as item}
 									<TableRow>
 										<TableCell>{item.id}</TableCell>
 										<TableCell>{item.name}</TableCell>
 										<TableCell>{item.info}</TableCell>
-										<TableCell style="word-break: break-word; white-space: normal;"
-											>{item.url}</TableCell
-										>
+										<TableCell class="break-words">{item.url}</TableCell>
+										<TableCell>{item.location}</TableCell>
+									</TableRow>
+								{/each}
+							</TableBody>
+						</Table>
+					{/if}
+				</div>
+			</Accordion.Content>
+		</Accordion.Item>
+
+		<!-- GoPro -->
+		<Accordion.Item value="gopro">
+			<Accordion.Trigger onclick={() => loadModuleData('gopro')}>GoPro</Accordion.Trigger>
+			<Accordion.Content>
+				{#if isLoading}
+					<div class="p-4 text-center">Loading...</div>
+				{:else}
+					<Table>
+						<TableHeader>
+							<TableRow>
+								<TableHead>ID</TableHead>
+								<TableHead>Name</TableHead>
+								<TableHead>Info</TableHead>
+								<TableHead>URL</TableHead>
+								<TableHead>Location</TableHead>
+							</TableRow>
+						</TableHeader>
+						<TableBody>
+							{#each renderTable(goProData) as item}
+								<TableRow>
+									<TableCell>{item.id}</TableCell>
+									<TableCell>{item.name}</TableCell>
+									<TableCell>{item.info}</TableCell>
+									<TableCell class="break-words">{item.url}</TableCell>
+									<TableCell>{item.location}</TableCell>
+								</TableRow>
+							{/each}
+						</TableBody>
+					</Table>
+				{/if}
+			</Accordion.Content>
+		</Accordion.Item>
+
+		<!-- Home Assistant -->
+		<Accordion.Item value="hass">
+			<Accordion.Trigger onclick={() => loadModuleData('hass')}>Home Assistant</Accordion.Trigger>
+			<Accordion.Content>
+				{#if isLoading}
+					<div class="p-4 text-center">Loading...</div>
+				{:else}
+					<Table>
+						<TableHeader>
+							<TableRow>
+								<TableHead>ID</TableHead>
+								<TableHead>Name</TableHead>
+								<TableHead>Info</TableHead>
+								<TableHead>URL</TableHead>
+								<TableHead>Location</TableHead>
+							</TableRow>
+						</TableHeader>
+						<TableBody>
+							{#each renderTable(hassData) as item}
+								<TableRow>
+									<TableCell>{item.id}</TableCell>
+									<TableCell>{item.name}</TableCell>
+									<TableCell>{item.info}</TableCell>
+									<TableCell class="break-words">{item.url}</TableCell>
+									<TableCell>{item.location}</TableCell>
+								</TableRow>
+							{/each}
+						</TableBody>
+					</Table>
+				{/if}
+			</Accordion.Content>
+		</Accordion.Item>
+
+		<!-- ONVIF -->
+		<Accordion.Item value="onvif">
+			<Accordion.Trigger onclick={() => loadModuleData('onvif')}>ONVIF</Accordion.Trigger>
+			<Accordion.Content>
+				<div class="space-y-4">
+					<OnvifTestForm onsubmit={handleOnvifTest} />
+					{#if isLoading}
+						<div class="p-4 text-center">Loading...</div>
+					{:else}
+						<Table>
+							<TableHeader>
+								<TableRow>
+									<TableHead>ID</TableHead>
+									<TableHead>Name</TableHead>
+									<TableHead>Info</TableHead>
+									<TableHead>URL</TableHead>
+									<TableHead>Location</TableHead>
+								</TableRow>
+							</TableHeader>
+							<TableBody>
+								{#each renderTable(onvifData) as item}
+									<TableRow>
+										<TableCell>{item.id}</TableCell>
+										<TableCell>{item.name}</TableCell>
+										<TableCell>{item.info}</TableCell>
+										<TableCell class="break-words">{item.url}</TableCell>
 										<TableCell>{item.location}</TableCell>
 									</TableRow>
 								{/each}
@@ -877,30 +687,13 @@
 
 		<!-- Roborock -->
 		<Accordion.Item value="roborock">
-			<Accordion.Trigger onclick={() => loadModuleDataOnExpand('roborock')}
-				>Roborock</Accordion.Trigger
-			>
+			<Accordion.Trigger onclick={() => loadModuleData('roborock')}>Roborock</Accordion.Trigger>
 			<Accordion.Content>
 				<div class="space-y-4">
-					<div class="flex gap-4">
-						<Input
-							type="text"
-							placeholder="username"
-							bind:value={roborockForm.username}
-							required
-							minlength={3}
-						/>
-						<Input
-							type="password"
-							placeholder="password"
-							bind:value={roborockForm.password}
-							required
-							minlength={6}
-						/>
-						<Button onclick={submitRoborock}>Login</Button>
-					</div>
-
-					{#if roborockData.length > 0}
+					<RoborockLoginForm onsubmit={handleRoborockLogin} />
+					{#if isLoading}
+						<div class="p-4 text-center">Loading...</div>
+					{:else}
 						<Table>
 							<TableHeader>
 								<TableRow>
@@ -912,14 +705,12 @@
 								</TableRow>
 							</TableHeader>
 							<TableBody>
-								{#each roborockData as item}
+								{#each renderTable(roborockData) as item}
 									<TableRow>
 										<TableCell>{item.id}</TableCell>
 										<TableCell>{item.name}</TableCell>
 										<TableCell>{item.info}</TableCell>
-										<TableCell style="word-break: break-word; white-space: normal;"
-											>{item.url}</TableCell
-										>
+										<TableCell class="break-words">{item.url}</TableCell>
 										<TableCell>{item.location}</TableCell>
 									</TableRow>
 								{/each}
@@ -930,157 +721,11 @@
 			</Accordion.Content>
 		</Accordion.Item>
 
-		<!-- FFmpeg Devices -->
-		<Accordion.Item value="ffmpeg-devices">
-			<Accordion.Trigger onclick={() => loadModuleDataOnExpand('ffmpeg-devices')}
-				>FFmpeg Devices (USB)</Accordion.Trigger
-			>
-			<Accordion.Content>
-				{#if isLoading}
-					<div class="p-4 text-center">Loading...</div>
-				{:else}
-					<Table>
-						<TableHeader>
-							<TableRow>
-								<TableHead>ID</TableHead>
-								<TableHead>Name</TableHead>
-								<TableHead>Info</TableHead>
-								<TableHead>URL</TableHead>
-								<TableHead>Location</TableHead>
-							</TableRow>
-						</TableHeader>
-						<TableBody>
-							{#each devicesData as item}
-								<TableRow>
-									<TableCell>{item.id}</TableCell>
-									<TableCell>{item.name}</TableCell>
-									<TableCell>{item.info}</TableCell>
-									<TableCell style="word-break: break-word; white-space: normal;"
-										>{item.url}</TableCell
-									>
-									<TableCell>{item.location}</TableCell>
-								</TableRow>
-							{/each}
-						</TableBody>
-					</Table>
-				{/if}
-			</Accordion.Content>
-		</Accordion.Item>
-
-		<!-- FFmpeg Hardware -->
-		<Accordion.Item value="ffmpeg-hardware">
-			<Accordion.Trigger onclick={() => loadModuleDataOnExpand('ffmpeg-hardware')}
-				>FFmpeg Hardware</Accordion.Trigger
-			>
-			<Accordion.Content>
-				{#if isLoading}
-					<div class="p-4 text-center">Loading...</div>
-				{:else}
-					<Table>
-						<TableHeader>
-							<TableRow>
-								<TableHead>ID</TableHead>
-								<TableHead>Name</TableHead>
-								<TableHead>Info</TableHead>
-								<TableHead>URL</TableHead>
-								<TableHead>Location</TableHead>
-							</TableRow>
-						</TableHeader>
-						<TableBody>
-							{#each hardwareData as item}
-								<TableRow>
-									<TableCell>{item.id}</TableCell>
-									<TableCell>{item.name}</TableCell>
-									<TableCell>{item.info}</TableCell>
-									<TableCell style="word-break: break-word; white-space: normal;"
-										>{item.url}</TableCell
-									>
-									<TableCell>{item.location}</TableCell>
-								</TableRow>
-							{/each}
-						</TableBody>
-					</Table>
-				{/if}
-			</Accordion.Content>
-		</Accordion.Item>
-
-		<!-- GoPro -->
-		<Accordion.Item value="gopro">
-			<Accordion.Trigger onclick={() => loadModuleDataOnExpand('gopro')}>GoPro</Accordion.Trigger>
-			<Accordion.Content>
-				{#if isLoading}
-					<div class="p-4 text-center">Loading...</div>
-				{:else}
-					<Table>
-						<TableHeader>
-							<TableRow>
-								<TableHead>ID</TableHead>
-								<TableHead>Name</TableHead>
-								<TableHead>Info</TableHead>
-								<TableHead>URL</TableHead>
-								<TableHead>Location</TableHead>
-							</TableRow>
-						</TableHeader>
-						<TableBody>
-							{#each goProData as item}
-								<TableRow>
-									<TableCell>{item.id}</TableCell>
-									<TableCell>{item.name}</TableCell>
-									<TableCell>{item.info}</TableCell>
-									<TableCell style="word-break: break-word; white-space: normal;"
-										>{item.url}</TableCell
-									>
-									<TableCell>{item.location}</TableCell>
-								</TableRow>
-							{/each}
-						</TableBody>
-					</Table>
-				{/if}
-			</Accordion.Content>
-		</Accordion.Item>
-
-		<!-- Home Assistant -->
-		<Accordion.Item value="hass">
-			<Accordion.Trigger onclick={() => loadModuleDataOnExpand('hass')}
-				>Home Assistant</Accordion.Trigger
-			>
-			<Accordion.Content>
-				{#if isLoading}
-					<div class="p-4 text-center">Loading...</div>
-				{:else}
-					<Table>
-						<TableHeader>
-							<TableRow>
-								<TableHead>ID</TableHead>
-								<TableHead>Name</TableHead>
-								<TableHead>Info</TableHead>
-								<TableHead>URL</TableHead>
-								<TableHead>Location</TableHead>
-							</TableRow>
-						</TableHeader>
-						<TableBody>
-							{#each hassData as item}
-								<TableRow>
-									<TableCell>{item.id}</TableCell>
-									<TableCell>{item.name}</TableCell>
-									<TableCell>{item.info}</TableCell>
-									<TableCell style="word-break: break-word; white-space: normal;"
-										>{item.url}</TableCell
-									>
-									<TableCell>{item.location}</TableCell>
-								</TableRow>
-							{/each}
-						</TableBody>
-					</Table>
-				{/if}
-			</Accordion.Content>
-		</Accordion.Item>
-
 		<!-- V4L2 -->
 		<Accordion.Item value="v4l2">
-			<Accordion.Trigger onclick={() => loadModuleDataOnExpand('v4l2')}
-				>V4L2 (Linux Video)</Accordion.Trigger
-			>
+			<Accordion.Trigger onclick={() => loadModuleData('v4l2')}>
+				V4L2 (Linux video)
+			</Accordion.Trigger>
 			<Accordion.Content>
 				{#if isLoading}
 					<div class="p-4 text-center">Loading...</div>
@@ -1096,14 +741,12 @@
 							</TableRow>
 						</TableHeader>
 						<TableBody>
-							{#each v4l2Data as item}
+							{#each renderTable(v4l2Data) as item}
 								<TableRow>
 									<TableCell>{item.id}</TableCell>
 									<TableCell>{item.name}</TableCell>
 									<TableCell>{item.info}</TableCell>
-									<TableCell style="word-break: break-word; white-space: normal;"
-										>{item.url}</TableCell
-									>
+									<TableCell class="break-words">{item.url}</TableCell>
 									<TableCell>{item.location}</TableCell>
 								</TableRow>
 							{/each}
@@ -1115,9 +758,9 @@
 
 		<!-- WebTorrent -->
 		<Accordion.Item value="webtorrent">
-			<Accordion.Trigger onclick={() => loadModuleDataOnExpand('webtorrent')}
-				>WebTorrent Shares</Accordion.Trigger
-			>
+			<Accordion.Trigger onclick={() => loadModuleData('webtorrent')}>
+				WebTorrent Shares
+			</Accordion.Trigger>
 			<Accordion.Content>
 				{#if isLoading}
 					<div class="p-4 text-center">Loading...</div>
@@ -1133,14 +776,12 @@
 							</TableRow>
 						</TableHeader>
 						<TableBody>
-							{#each webTorrentData as item}
+							{#each renderTable(webTorrentData) as item}
 								<TableRow>
 									<TableCell>{item.id}</TableCell>
 									<TableCell>{item.name}</TableCell>
 									<TableCell>{item.info}</TableCell>
-									<TableCell style="word-break: break-word; white-space: normal;"
-										>{item.url}</TableCell
-									>
+									<TableCell class="break-words">{item.url}</TableCell>
 									<TableCell>{item.location}</TableCell>
 								</TableRow>
 							{/each}
