@@ -9,9 +9,9 @@
 	} from '$lib/components/ui/table';
 	import { Button } from '$lib/components/ui/button';
 	import { Checkbox } from '$lib/components/ui/checkbox';
-	import { onMount, onDestroy } from 'svelte';
+	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
-	import { useDeleteStreamMutation } from '$lib/queries/streams.js';
+	import { useDeleteStreamMutation, useStreamsQuery } from '$lib/queries/streams.js';
 
 	// Types for stream data
 	interface StreamProducer {
@@ -43,10 +43,14 @@
 		status: 'online' | 'offline';
 	}
 
-	// Stream data state
-	let streams = $state<Stream[]>([]);
-	let isLoading = $state(false);
-	let error = $state<string | null>(null);
+	// Streams query with auto-polling
+	const streamsQuery = useStreamsQuery(1000); // Poll every second like original
+
+	// Derived state from query
+	let streams = $derived($streamsQuery.data || []);
+	let isLoading = $derived($streamsQuery.isLoading);
+	let isRefreshing = $derived($streamsQuery.isFetching && !$streamsQuery.isLoading);
+	let error = $derived($streamsQuery.error?.message || null);
 
 	// Selection state
 	let selectedStreams = $state<Set<string>>(new Set());
@@ -63,13 +67,18 @@
 		mjpeg: true
 	});
 
-	// Auto-refresh interval
-	let refreshInterval: number | undefined;
-	let refreshAttempts = 0;
-	const maxRefreshAttempts = 5;
-
 	// Delete mutation
 	const deleteStreamMutation = useDeleteStreamMutation();
+
+	// Platform-aware modifier key display
+	let modifierKey = $state('⌘');
+
+	function detectPlatform() {
+		if (typeof navigator !== 'undefined') {
+			const platform = navigator.platform.toLowerCase();
+			modifierKey = platform.includes('mac') ? '⌘' : 'Ctrl';
+		}
+	}
 
 	function toggleAllSelection() {
 		if (isAllSelected) {
@@ -127,75 +136,28 @@
 		}
 	}
 
-	async function refreshStreams(isManual = false) {
+	async function manualRefresh() {
 		if (!browser) return;
-
-		// Don't show loading for auto-refresh unless it's the first load
-		if (isManual || streams.length === 0) {
-			isLoading = true;
-		}
-
-		if (isManual) {
-			error = null;
-			refreshAttempts = 0;
-		}
-
-		try {
-			const response = await fetch('/api/streams');
-			if (!response.ok) {
-				throw new Error(`HTTP error! status: ${response.status}`);
-			}
-
-			const data = await response.json();
-
-			// Transform the go2rtc response format to our internal format
-			const transformedStreams: Stream[] = Object.entries(data).map(([name, info]) => {
-				const streamInfo = info as StreamInfo;
-				const hasProducers = streamInfo.producers && streamInfo.producers.length > 0;
-				const hasConsumers = streamInfo.consumers && streamInfo.consumers.length > 0;
-
-				return {
-					name,
-					info: {
-						producers: streamInfo.producers || [],
-						consumers: streamInfo.consumers || []
-					},
-					status: hasProducers ? 'online' : 'offline'
-				};
-			});
-
-			streams = transformedStreams;
-			refreshAttempts = 0; // Reset attempts on success
-
-			// Clear any previous error
-			if (error) {
-				error = null;
-			}
-		} catch (err) {
-			refreshAttempts++;
-			const errorMessage = err instanceof Error ? err.message : 'Failed to fetch streams';
-
-			// Only show error if manual refresh or if we've exceeded max attempts
-			if (isManual || refreshAttempts >= maxRefreshAttempts) {
-				error = errorMessage;
-			}
-
-			console.error('Error fetching streams:', err);
-		} finally {
-			isLoading = false;
-		}
+		await $streamsQuery.refetch();
 	}
 
 	onMount(() => {
-		refreshStreams();
-		// Auto-refresh every second
-		refreshInterval = window.setInterval(refreshStreams, 1000);
-	});
+		detectPlatform();
 
-	onDestroy(() => {
-		if (refreshInterval) {
-			clearInterval(refreshInterval);
+		// Keyboard shortcut handler for Cmd/Ctrl+R (manual refresh)
+		function handleKeydown(e: KeyboardEvent) {
+			// Check for Cmd+R (Mac) or Ctrl+R (Windows/Linux)
+			if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'r') {
+				e.preventDefault();
+				manualRefresh();
+			}
 		}
+
+		window.addEventListener('keydown', handleKeydown);
+
+		return () => {
+			window.removeEventListener('keydown', handleKeydown);
+		};
 	});
 </script>
 
@@ -229,8 +191,22 @@
 		</div>
 
 		<div class="flex items-center gap-2">
-			<Button size="sm" variant="outline" onclick={() => refreshStreams(true)} disabled={isLoading}>
-				{isLoading ? 'Refreshing...' : 'Refresh'}
+			<Button
+				size="sm"
+				variant="outline"
+				onclick={manualRefresh}
+				disabled={isRefreshing}
+				aria-label="Refresh streams (Keyboard shortcut: {modifierKey}+R)"
+				title="Refresh streams ({modifierKey}+R)"
+			>
+				<span class="flex items-center gap-2">
+					{isRefreshing ? 'Refreshing...' : 'Refresh'}
+					<kbd
+						class="bg-muted text-muted-foreground pointer-events-none inline-flex h-5 items-center gap-1 rounded border px-1.5 font-mono text-[10px] font-medium opacity-100 select-none"
+					>
+						<span class="text-xs">{modifierKey}</span>R
+					</kbd>
+				</span>
 			</Button>
 			{#if error}
 				<span class="text-sm text-red-600">Connection error</span>
@@ -273,12 +249,7 @@
 							<div class="text-red-600">
 								<p class="font-medium">Error loading streams</p>
 								<p class="mt-1 text-sm">{error}</p>
-								<Button
-									size="sm"
-									variant="outline"
-									class="mt-2"
-									onclick={() => refreshStreams(true)}
-								>
+								<Button size="sm" variant="outline" class="mt-2" onclick={manualRefresh}>
 									Retry
 								</Button>
 							</div>
