@@ -3,7 +3,7 @@
 	import { browser } from '$app/environment';
 	import { Button } from '$lib/components/ui/button';
 	import { Alert, AlertDescription, AlertTitle } from '$lib/components/ui/alert';
-	import { registerShortcutAction, unregisterShortcutAction, modifierKey } from '$lib/stores/shortcuts';
+	import { modifierKey } from '$lib/stores/shortcuts';
 
 	// State
 	let editor: any = null;
@@ -102,9 +102,6 @@
 	onMount(() => {
 		if (!browser) return;
 
-		// Register keyboard shortcut action
-		registerShortcutAction('save-config', saveConfig);
-
 		// Load app info first to get config path
 		loadAppInfo();
 
@@ -162,7 +159,6 @@
 		})();
 
 		return () => {
-			unregisterShortcutAction('save-config');
 			if (editor) {
 				editor.destroy();
 			}
@@ -182,11 +178,20 @@
 
 <div class="flex h-full flex-col space-y-4">
 	<div class="flex items-center justify-between">
-		<h1 class="text-2xl font-bold">{configPath}</h1>
-		<Button size="sm" onclick={saveConfig} disabled={isSaving || isLoading}>
+		<div>
+			<h1 class="text-2xl font-bold">Configuration</h1>
+			<p class="text-sm text-muted-foreground font-mono">{configPath}</p>
+		</div>
+		<Button 
+			size="sm" 
+			onclick={saveConfig} 
+			disabled={isSaving || isLoading}
+			aria-label="Save configuration (Keyboard shortcut: {$modifierKey}+Enter)"
+			title="Save configuration ({$modifierKey}+Enter)"
+		>
 			{isSaving ? 'Saving...' : 'Save & Restart'}
 			{#if !isSaving && !isLoading}
-				<span class="ml-2 text-xs opacity-60">{$modifierKey}S</span>
+				<span class="ml-2 text-xs opacity-60">{$modifierKey}↵</span>
 			{/if}
 		</Button>
 	</div>

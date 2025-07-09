@@ -13,7 +13,7 @@
 	import { browser } from '$app/environment';
 	import { useDeleteStreamMutation } from '$lib/queries/streams.js';
 	import type { Stream, StreamInfo } from '$lib/services/api.js';
-	import { modifierKey, registerShortcutAction, unregisterShortcutAction } from '$lib/stores/shortcuts';
+	import { modifierKey } from '$lib/stores/shortcuts';
 
 	// Stream data state (working manual implementation)
 	let streams = $state<Stream[]>([]);
@@ -169,16 +169,9 @@
 	}
 
 	onMount(() => {
-		// Register keyboard shortcut action
-		registerShortcutAction('refresh-streams', manualRefresh);
-
 		// Start initial load and auto-refresh
 		refreshStreams();
 		refreshInterval = window.setInterval(refreshStreams, 1000);
-
-		return () => {
-			unregisterShortcutAction('refresh-streams');
-		};
 	});
 
 	onDestroy(() => {
@@ -223,15 +216,15 @@
 				variant="outline"
 				onclick={manualRefresh}
 				disabled={isManualRefreshing}
-				aria-label="Refresh streams (Keyboard shortcut: {$modifierKey}+R)"
-				title="Refresh streams ({$modifierKey}+R)"
+				aria-label="Refresh streams (Keyboard shortcut: {$modifierKey}+Shift+R)"
+				title="Refresh streams ({$modifierKey}+Shift+R)"
 			>
 				<span class="flex items-center gap-2">
 					{isManualRefreshing ? 'Refreshing...' : 'Refresh'}
 					<kbd
 						class="bg-muted text-muted-foreground pointer-events-none inline-flex h-5 items-center gap-1 rounded border px-1.5 font-mono text-[10px] font-medium opacity-100 select-none"
 					>
-						<span class="text-xs">{$modifierKey}</span>R
+						<span class="text-xs">{$modifierKey}⇧R</span>
 					</kbd>
 				</span>
 			</Button>
