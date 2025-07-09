@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { onMount } from 'svelte';
 	import Go2rtcPlayer from '$lib/components/Go2rtcPlayer.svelte';
 
 	// Get selected streams from URL
@@ -48,17 +47,6 @@
 		// For larger numbers
 		return 'grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8';
 	}
-
-	// Add keyboard shortcut to go back
-	onMount(() => {
-		function handleKeydown(e: KeyboardEvent) {
-			if (e.key === 'Escape') {
-				window.history.back();
-			}
-		}
-		window.addEventListener('keydown', handleKeydown);
-		return () => window.removeEventListener('keydown', handleKeydown);
-	});
 </script>
 
 <svelte:head>

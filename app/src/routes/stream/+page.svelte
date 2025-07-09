@@ -1,22 +1,10 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { onMount } from 'svelte';
 	import Go2rtcPlayer from '$lib/components/Go2rtcPlayer.svelte';
 	import { Button } from '$lib/components/ui/button';
 
 	// Get stream source from URL parameter
 	let streamSrc = $derived(page.url.searchParams.get('src'));
-
-	// Add keyboard shortcut to go back
-	onMount(() => {
-		function handleKeydown(e: KeyboardEvent) {
-			if (e.key === 'Escape') {
-				window.history.back();
-			}
-		}
-		window.addEventListener('keydown', handleKeydown);
-		return () => window.removeEventListener('keydown', handleKeydown);
-	});
 </script>
 
 <svelte:head>

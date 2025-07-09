@@ -26,6 +26,9 @@ importers:
       '@inlang/paraglide-js':
         specifier: ^2.0.0
         version: 2.2.0
+      '@svelte-put/shortcut':
+        specifier: ^4.1.0
+        version: 4.1.0(svelte@5.35.4)
       '@tanstack/svelte-query':
         specifier: ^5.81.5
         version: 5.81.5(svelte@5.35.4)
@@ -657,6 +660,11 @@ packages:
   '@sqlite.org/sqlite-wasm@3.48.0-build4':
     resolution: {integrity: sha512-hI6twvUkzOmyGZhQMza1gpfqErZxXRw6JEsiVjUbo7tFanVD+8Oil0Ih3l2nGzHdxPI41zFmfUQG7GHqhciKZQ==}
     hasBin: true
+
+  '@svelte-put/shortcut@4.1.0':
+    resolution: {integrity: sha512-wImNEIkbxAIWFqlfuhcbC+jRPDeRa/uJGIXHMEVVD+jqL9xCwWNnkGQJ6Qb2XVszuRLHlb8SGZDL3Io/h3vs8w==}
+    peerDependencies:
+      svelte: ^5.1.0
 
   '@sveltejs/acorn-typescript@1.0.5':
     resolution: {integrity: sha512-IwQk4yfwLdibDlrXVE04jTZYlLnwsTT2PIOQQGNLWfjavGifnk1JD1LcZjZaBTRcxZu2FfPfNLOE04DSu9lqtQ==}
@@ -2595,6 +2603,10 @@ snapshots:
   '@sinclair/typebox@0.31.28': {}
 
   '@sqlite.org/sqlite-wasm@3.48.0-build4': {}
+
+  '@svelte-put/shortcut@4.1.0(svelte@5.35.4)':
+    dependencies:
+      svelte: 5.35.4
 
   '@sveltejs/acorn-typescript@1.0.5(acorn@8.15.0)':
     dependencies:

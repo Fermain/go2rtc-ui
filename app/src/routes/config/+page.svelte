@@ -1,108 +1,91 @@
 <script lang="ts">
-	import { Button } from '$lib/components/ui/button';
-	import { Alert, AlertDescription, AlertTitle } from '$lib/components/ui/alert';
-	import { onMount } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 	import { browser } from '$app/environment';
+	import { Button } from '$lib/components/ui/button';
+	import { registerShortcutAction, unregisterShortcutAction, modifierKey } from '$lib/stores/shortcuts';
 
-	let configEditor: HTMLElement;
-	let editor: any;
-	let originalConfig = '';
-	let isLoading = true;
-	let errorMessage = '';
-	let successMessage = '';
-	let isSaving = false;
-	let configPath = 'Configuration';
+	// Import types
+	interface AppInfo {
+		config_path: string;
+		version: string;
+	}
+
+	// State
+	let editor: any = null;
+	let configEditor: HTMLElement = $state();
+	let isLoading = $state(false);
+	let isSaving = $state(false);
+	let error = $state<string | null>(null);
+	let success = $state<string | null>(null);
+	let appInfo = $state<AppInfo | null>(null);
 
 	async function loadAppInfo() {
 		try {
-			const response = await fetch('/api', { cache: 'no-cache' });
-			if (response.ok) {
-				const appInfo = await response.json();
-				configPath = appInfo.config_path || 'Configuration';
+			const response = await fetch('/api');
+			if (!response.ok) {
+				throw new Error(`HTTP error! status: ${response.status}`);
 			}
-		} catch (error) {
-			console.error('Failed to load app info:', error);
+			appInfo = await response.json();
+		} catch (err) {
+			console.error('Failed to load app info:', err);
+			error = 'Failed to load application info';
 		}
 	}
 
 	async function loadConfig() {
+		if (!appInfo?.config_path || !editor) return;
+
+		isLoading = true;
+		error = null;
+
 		try {
-			isLoading = true;
-			errorMessage = '';
-
-			// Make real API call to get configuration
-			const response = await fetch('/api/config', { cache: 'no-cache' });
-
-			if (response.status === 410) {
-				errorMessage = 'Config file is not set';
-				if (editor) {
-					editor.dispatch({
-						changes: { from: 0, to: editor.state.doc.length, insert: '' }
-					});
-				}
-			} else if (response.status === 404) {
-				// Config file doesn't exist
-				originalConfig = '';
-				if (editor) {
-					editor.dispatch({
-						changes: { from: 0, to: editor.state.doc.length, insert: '' }
-					});
-				}
-			} else if (response.ok) {
-				originalConfig = await response.text();
-				if (editor) {
-					editor.dispatch({
-						changes: { from: 0, to: editor.state.doc.length, insert: originalConfig }
-					});
-				}
-			} else {
-				errorMessage = `Unknown error: ${response.statusText} (${response.status})`;
+			const response = await fetch('/api/config');
+			if (!response.ok) {
+				throw new Error(`HTTP error! status: ${response.status}`);
 			}
-		} catch (error) {
-			errorMessage = `Failed to load config: ${error}`;
+
+			const configData = await response.text();
+			editor.dispatch({
+				changes: { from: 0, to: editor.state.doc.length, insert: configData }
+			});
+		} catch (err) {
+			console.error('Failed to load config:', err);
+			error = 'Failed to load configuration file';
 		} finally {
 			isLoading = false;
 		}
 	}
 
 	async function saveConfig() {
-		if (!editor) return;
+		if (!editor || isSaving) return;
+
+		isSaving = true;
+		error = null;
+		success = null;
 
 		try {
-			isSaving = true;
-			errorMessage = '';
-			successMessage = '';
+			const configContent = editor.state.doc.toString();
 
-			// Check if config was changed elsewhere
-			const checkResponse = await fetch('/api/config', { cache: 'no-cache' });
-			if (checkResponse.ok && originalConfig !== (await checkResponse.text())) {
-				errorMessage =
-					'Config was changed from another place. Refresh the page and make changes again';
-				return;
-			}
-
-			// Save the config
-			const saveResponse = await fetch('/api/config', {
-				method: 'POST',
-				body: editor.state.doc.toString()
+			const response = await fetch('/api/config', {
+				method: 'PUT',
+				headers: {
+					'Content-Type': 'text/plain'
+				},
+				body: configContent
 			});
 
-			if (saveResponse.ok) {
-				successMessage = 'Config saved successfully';
-				originalConfig = editor.state.doc.toString();
-
-				// Restart the service
-				await fetch('/api/restart', { method: 'POST' });
-
-				// Clear success message after 3 seconds
-				setTimeout(() => {
-					successMessage = '';
-				}, 3000);
-			} else {
-				errorMessage = await saveResponse.text();
+			if (!response.ok) {
+				const errorText = await response.text();
+				throw new Error(errorText || `HTTP error! status: ${response.status}`);
 			}
-		} catch (error) {
-			errorMessage = `Failed to save config: ${error}`;
+
+			success = 'Configuration saved successfully!';
+			setTimeout(() => {
+				success = null;
+			}, 3000);
+		} catch (err) {
+			console.error('Failed to save config:', err);
+			error = err instanceof Error ? err.message : 'Failed to save configuration';
 		} finally {
 			isSaving = false;
 		}
@@ -111,18 +94,11 @@
 	onMount(() => {
 		if (!browser) return;
 
+		// Register keyboard shortcut action
+		registerShortcutAction('save-config', saveConfig);
+
 		// Load app info first to get config path
 		loadAppInfo();
-
-		// Keyboard shortcut handler
-		function handleKeydown(e: KeyboardEvent) {
-			if ((e.metaKey || e.ctrlKey) && e.key === 's') {
-				e.preventDefault();
-				saveConfig();
-			}
-		}
-
-		window.addEventListener('keydown', handleKeydown);
 
 		// Initialize CodeMirror asynchronously
 		(async () => {
@@ -178,11 +154,17 @@
 		})();
 
 		return () => {
-			window.removeEventListener('keydown', handleKeydown);
+			unregisterShortcutAction('save-config');
 			if (editor) {
 				editor.destroy();
 			}
 		};
+	});
+
+	onDestroy(() => {
+		if (editor) {
+			editor.destroy();
+		}
 	});
 </script>
 
@@ -190,42 +172,55 @@
 	<title>go2rtc - Config</title>
 </svelte:head>
 
-<div class="flex h-full flex-col space-y-4">
-	<div class="flex items-center justify-between">
-		<h1 class="text-2xl font-bold">{configPath}</h1>
-		<Button size="sm" onclick={saveConfig} disabled={isSaving || isLoading}>
-			{isSaving ? 'Saving...' : 'Save & Restart'}
-			{#if !isSaving && !isLoading}
-				<span class="ml-2 text-xs opacity-60">⌘S</span>
+<div class="container mx-auto py-6">
+	<!-- Header -->
+	<div class="mb-6 flex items-center justify-between">
+		<div>
+			<h1 class="text-3xl font-bold">Configuration</h1>
+			{#if appInfo?.config_path}
+				<p class="text-muted-foreground text-sm">{appInfo.config_path}</p>
 			{/if}
-		</Button>
+		</div>
+
+		<div class="flex items-center gap-2">
+			{#if success}
+				<span class="text-sm text-green-600">{success}</span>
+			{/if}
+			{#if error}
+				<span class="text-sm text-red-600">{error}</span>
+			{/if}
+
+			<Button
+				onclick={saveConfig}
+				disabled={isSaving || isLoading}
+				aria-label="Save configuration (Keyboard shortcut: {$modifierKey}+S)"
+				title="Save configuration ({$modifierKey}+S)"
+			>
+				<span class="flex items-center gap-2">
+					{isSaving ? 'Saving...' : 'Save Config'}
+					<kbd
+						class="bg-muted text-muted-foreground pointer-events-none inline-flex h-5 items-center gap-1 rounded border px-1.5 font-mono text-[10px] font-medium opacity-100 select-none"
+					>
+						<span class="text-xs">{$modifierKey}</span>S
+					</kbd>
+				</span>
+			</Button>
+		</div>
 	</div>
 
-	{#if errorMessage}
-		<Alert variant="destructive">
-			<AlertTitle>Error</AlertTitle>
-			<AlertDescription>{errorMessage}</AlertDescription>
-		</Alert>
-	{/if}
-
-	{#if successMessage}
-		<Alert>
-			<AlertTitle>Success</AlertTitle>
-			<AlertDescription>{successMessage}</AlertDescription>
-		</Alert>
-	{/if}
-
-	<div class="relative flex-1 rounded-md border">
+	<!-- Editor Container -->
+	<div class="rounded-lg border bg-card shadow-sm" style="height: calc(100vh - 200px);">
 		{#if isLoading}
-			<div class="bg-background/80 absolute inset-0 flex items-center justify-center">
-				<div class="text-muted-foreground">Loading configuration...</div>
+			<div class="flex h-full items-center justify-center">
+				<div class="flex items-center gap-2">
+					<div
+						class="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600"
+					></div>
+					Loading configuration...
+				</div>
 			</div>
+		{:else}
+			<div bind:this={configEditor} class="h-full w-full overflow-hidden rounded-lg"></div>
 		{/if}
-
-		<div
-			bind:this={configEditor}
-			class="h-full w-full overflow-hidden"
-			style="display: flex; flex-direction: column;"
-		></div>
 	</div>
 </div>

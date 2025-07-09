@@ -13,6 +13,7 @@
 	import { browser } from '$app/environment';
 	import { useDeleteStreamMutation } from '$lib/queries/streams.js';
 	import type { Stream, StreamInfo } from '$lib/services/api.js';
+	import { modifierKey, registerShortcutAction, unregisterShortcutAction } from '$lib/stores/shortcuts';
 
 	// Stream data state (working manual implementation)
 	let streams = $state<Stream[]>([]);
@@ -42,16 +43,6 @@
 
 	// Delete mutation
 	const deleteStreamMutation = useDeleteStreamMutation();
-
-	// Platform-aware modifier key display
-	let modifierKey = $state('⌘');
-
-	function detectPlatform() {
-		if (typeof navigator !== 'undefined') {
-			const platform = navigator.platform.toLowerCase();
-			modifierKey = platform.includes('mac') ? '⌘' : 'Ctrl';
-		}
-	}
 
 	function toggleAllSelection() {
 		if (isAllSelected) {
@@ -178,25 +169,15 @@
 	}
 
 	onMount(() => {
-		detectPlatform();
+		// Register keyboard shortcut action
+		registerShortcutAction('refresh-streams', manualRefresh);
 
 		// Start initial load and auto-refresh
 		refreshStreams();
 		refreshInterval = window.setInterval(refreshStreams, 1000);
 
-		// Keyboard shortcut handler for Cmd/Ctrl+R (manual refresh)
-		function handleKeydown(e: KeyboardEvent) {
-			// Check for Cmd+R (Mac) or Ctrl+R (Windows/Linux)
-			if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'r') {
-				e.preventDefault();
-				manualRefresh();
-			}
-		}
-
-		window.addEventListener('keydown', handleKeydown);
-
 		return () => {
-			window.removeEventListener('keydown', handleKeydown);
+			unregisterShortcutAction('refresh-streams');
 		};
 	});
 
@@ -242,15 +223,15 @@
 				variant="outline"
 				onclick={manualRefresh}
 				disabled={isManualRefreshing}
-				aria-label="Refresh streams (Keyboard shortcut: {modifierKey}+R)"
-				title="Refresh streams ({modifierKey}+R)"
+				aria-label="Refresh streams (Keyboard shortcut: {$modifierKey}+R)"
+				title="Refresh streams ({$modifierKey}+R)"
 			>
 				<span class="flex items-center gap-2">
 					{isManualRefreshing ? 'Refreshing...' : 'Refresh'}
 					<kbd
 						class="bg-muted text-muted-foreground pointer-events-none inline-flex h-5 items-center gap-1 rounded border px-1.5 font-mono text-[10px] font-medium opacity-100 select-none"
 					>
-						<span class="text-xs">{modifierKey}</span>R
+						<span class="text-xs">{$modifierKey}</span>R
 					</kbd>
 				</span>
 			</Button>
