@@ -26,9 +26,6 @@ importers:
       '@inlang/paraglide-js':
         specifier: ^2.0.0
         version: 2.2.0
-      '@macfja/svelte-persistent-store':
-        specifier: ^2.4.2
-        version: 2.4.2(svelte@5.35.4)
       '@tanstack/svelte-query':
         specifier: ^5.81.5
         version: 5.81.5(svelte@5.35.4)
@@ -111,6 +108,9 @@ importers:
       globals:
         specifier: ^16.0.0
         version: 16.3.0
+      mode-watcher:
+        specifier: ^1.1.0
+        version: 1.1.0(svelte@5.35.4)
       playwright:
         specifier: ^1.53.0
         version: 1.53.2
@@ -527,14 +527,6 @@ packages:
     resolution: {integrity: sha512-CEAyqcZmNBfYzVgaRmK2RFJP5tnbXxekRyDk0XX/eZQRfsJmkDvmQwXNX8C869BgNeryzmrRyjHhUL6g9ZOHNA==}
     peerDependencies:
       svelte: ^5
-
-  '@macfja/serializer@1.1.4':
-    resolution: {integrity: sha512-bUKIyLdSTyPfTgOvRqH8MkSDQhSaEGjUSvQlvnjA6tbeZDuY9u0WKieZNyqYwq3mPxytNd6Z5Lq2n4A3dA9HMA==}
-
-  '@macfja/svelte-persistent-store@2.4.2':
-    resolution: {integrity: sha512-ZAcWJcCnfZDIiy77Aoj9KQ6qDt6UmRZgUM3UHjmOY1IRf0SirDl1WgBFlVUMynRLERy4/EgZtWPqAMnh3cbCRA==}
-    peerDependencies:
-      svelte: ^3.0 || ^4.0 || ^5.0
 
   '@marijn/find-cluster-break@1.0.2':
     resolution: {integrity: sha512-l0h88YhZFyKdXIFNfSWpyjStDjGHwZ/U7iobcK1cQQD8sejsONdQtTVU+1wVN1PBw40PiiHB1vA5S7VTfQiP9g==}
@@ -1024,9 +1016,6 @@ packages:
     resolution: {integrity: sha512-yQbXgO/OSZVD2IsiLlro+7Hf6Q18EJrKSEsdoMzKePKXct3gvD8oLcOQdIzGupr5Fj+EDe8gO/lxc1BzfMpxvA==}
     engines: {node: '>=8'}
 
-  browser-cookies@1.2.0:
-    resolution: {integrity: sha512-cg2WuoOJo+F+g2XjEaP8nmeRp1vDHjt7sqpKJMsTNXKrpyIBNVslYJeehvs6FEddj8usV2+qyRSBEX244yN5/g==}
-
   cac@6.7.14:
     resolution: {integrity: sha512-b6Ilus+c3RrdDk+JhLKUAQfzzgLEPy6wcXqS7f/xe1EETvsDP6GORG7SFuOs6cID5YkqchW/LXZbX5bc8j7ZcQ==}
     engines: {node: '>=8'}
@@ -1330,9 +1319,6 @@ packages:
     resolution: {integrity: sha512-3gKm/gCSUipeLsRYZbbdA1BD83lBoWUkZ7G9VFrhWPAU76KwYo5KR8V28bpoPm/ygy0x5/GCbpRQdY7VLYCoIg==}
     hasBin: true
 
-  idb-keyval@6.2.2:
-    resolution: {integrity: sha512-yjD9nARJ/jb1g+CvD0tlhUHOrJ9Sy0P8T9MF3YaLlHnSRpwPfpTX0XIvpmw3gAJUmEu3FiICLBDPXVwyEvrleg==}
-
   ignore@5.3.2:
     resolution: {integrity: sha512-hsBTNUqQTDwkWtcdYI2i06Y/nUBEsNEDJKjWdigLvegy8kDuJAS8uRlpkkcQpyEXL0Z/pjDy5HBmMjRCJ2gq+g==}
     engines: {node: '>= 4'}
@@ -1553,6 +1539,11 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
+  mode-watcher@1.1.0:
+    resolution: {integrity: sha512-mUT9RRGPDYenk59qJauN1rhsIMKBmWA3xMF+uRwE8MW/tjhaDSCCARqkSuDTq8vr4/2KcAxIGVjACxTjdk5C3g==}
+    peerDependencies:
+      svelte: ^5.27.0
+
   mri@1.2.0:
     resolution: {integrity: sha512-tzzskb3bG8LvYGFF/mDTpq3jpI6Q9wc3LEmBaghu+DdCssd1FakN7Bc0hVNmEyGq1bq3RgfkCb3cmQLpNPOroA==}
     engines: {node: '>=4'}
@@ -1768,6 +1759,16 @@ packages:
   run-parallel@1.2.0:
     resolution: {integrity: sha512-5l4VyZR86LZ/lDxZTR6jqL8AFE2S0IFLMP26AbjsLVADxHdhB/c0GUsH+y39UfCi3dzz8OlQuPmnaJOMoDHQBA==}
 
+  runed@0.23.4:
+    resolution: {integrity: sha512-9q8oUiBYeXIDLWNK5DfCWlkL0EW3oGbk845VdKlPeia28l751VpfesaB/+7pI6rnbx1I6rqoZ2fZxptOJLxILA==}
+    peerDependencies:
+      svelte: ^5.7.0
+
+  runed@0.25.0:
+    resolution: {integrity: sha512-7+ma4AG9FT2sWQEA0Egf6mb7PBT2vHyuHail1ie8ropfSjvZGtEAx8YTmUjv/APCsdRRxEVvArNjALk9zFSOrg==}
+    peerDependencies:
+      svelte: ^5.7.0
+
   runed@0.29.2:
     resolution: {integrity: sha512-0cq6cA6sYGZwl/FvVqjx9YN+1xEBu9sDDyuWdDW1yWX7JF2wmvmVKfH+hVCZs+csW+P3ARH92MjI3H9QTagOQA==}
     peerDependencies:
@@ -1802,16 +1803,6 @@ packages:
   sirv@3.0.1:
     resolution: {integrity: sha512-FoqMu0NCGBLCcAkS1qA+XJIQTR6/JHfQXl+uGteNCQ76T91DMUjPa9xfmeqMY3z80nLSg9yQmNjK0Px6RWsH/A==}
     engines: {node: '>=18'}
-
-  sjcl-bit-array@1.0.0:
-    resolution: {integrity: sha512-xoR134YJa7AHToLqCWuLYGpAdcBuLbSgwXe9c5HTIN4vr5TILXO/jVF8pLeXDhC7JTOvpmXUkiOupawVNTZVdQ==}
-
-  sjcl-codec-hex@1.0.0:
-    resolution: {integrity: sha512-lBBjqky1BEH+WZdABR/iSl2Pu3HO8n8r2D7nkzYLZfcR9ke4kUGMvO0ztRkla5oi4Esbc9pOlBtyGeMjYOU0ng==}
-
-  sjcl-es@2.0.0:
-    resolution: {integrity: sha512-P8O+4pAt95XqmTlvvPdbmBggjAgSE0LQnhSEYUKYKepN176b/8K9zcVrrqhuLu5EUQyeCYy/56J9FzxvzvMavg==}
-    engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
 
   source-map-js@1.2.1:
     resolution: {integrity: sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA==}
@@ -1861,6 +1852,12 @@ packages:
     peerDependenciesMeta:
       svelte:
         optional: true
+
+  svelte-toolbelt@0.7.1:
+    resolution: {integrity: sha512-HcBOcR17Vx9bjaOceUvxkY3nGmbBmCBBbuWLLEWO6jtmWH8f/QoWmbyUfQZrpDINH39en1b8mptfPQT9VKQ1xQ==}
+    engines: {node: '>=18', pnpm: '>=8.7.0'}
+    peerDependencies:
+      svelte: ^5.0.0
 
   svelte-toolbelt@0.9.3:
     resolution: {integrity: sha512-HCSWxCtVmv+c6g1ACb8LTwHVbDqLKJvHpo6J8TaqwUme2hj9ATJCpjCPNISR1OCq2Q4U1KT41if9ON0isINQZw==}
@@ -2515,17 +2512,6 @@ snapshots:
     dependencies:
       svelte: 5.35.4
 
-  '@macfja/serializer@1.1.4': {}
-
-  '@macfja/svelte-persistent-store@2.4.2(svelte@5.35.4)':
-    dependencies:
-      '@macfja/serializer': 1.1.4
-      browser-cookies: 1.2.0
-      idb-keyval: 6.2.2
-      sjcl-codec-hex: 1.0.0
-      sjcl-es: 2.0.0
-      svelte: 5.35.4
-
   '@marijn/find-cluster-break@1.0.2': {}
 
   '@nodelib/fs.scandir@2.1.5':
@@ -3021,8 +3007,6 @@ snapshots:
     dependencies:
       fill-range: 7.1.1
 
-  browser-cookies@1.2.0: {}
-
   cac@6.7.14: {}
 
   callsites@3.1.0: {}
@@ -3331,8 +3315,6 @@ snapshots:
 
   human-id@4.1.1: {}
 
-  idb-keyval@6.2.2: {}
-
   ignore@5.3.2: {}
 
   ignore@7.0.5: {}
@@ -3493,6 +3475,12 @@ snapshots:
 
   mkdirp@3.0.1: {}
 
+  mode-watcher@1.1.0(svelte@5.35.4):
+    dependencies:
+      runed: 0.25.0(svelte@5.35.4)
+      svelte: 5.35.4
+      svelte-toolbelt: 0.7.1(svelte@5.35.4)
+
   mri@1.2.0: {}
 
   mrmime@2.0.1: {}
@@ -3642,6 +3630,16 @@ snapshots:
     dependencies:
       queue-microtask: 1.2.3
 
+  runed@0.23.4(svelte@5.35.4):
+    dependencies:
+      esm-env: 1.2.2
+      svelte: 5.35.4
+
+  runed@0.25.0(svelte@5.35.4):
+    dependencies:
+      esm-env: 1.2.2
+      svelte: 5.35.4
+
   runed@0.29.2(svelte@5.35.4):
     dependencies:
       esm-env: 1.2.2
@@ -3670,14 +3668,6 @@ snapshots:
       '@polka/url': 1.0.0-next.29
       mrmime: 2.0.1
       totalist: 3.0.1
-
-  sjcl-bit-array@1.0.0: {}
-
-  sjcl-codec-hex@1.0.0:
-    dependencies:
-      sjcl-bit-array: 1.0.0
-
-  sjcl-es@2.0.0: {}
 
   source-map-js@1.2.1: {}
 
@@ -3727,6 +3717,13 @@ snapshots:
       postcss-scss: 4.0.9(postcss@8.5.6)
       postcss-selector-parser: 7.1.0
     optionalDependencies:
+      svelte: 5.35.4
+
+  svelte-toolbelt@0.7.1(svelte@5.35.4):
+    dependencies:
+      clsx: 2.1.1
+      runed: 0.23.4(svelte@5.35.4)
+      style-to-object: 1.0.9
       svelte: 5.35.4
 
   svelte-toolbelt@0.9.3(svelte@5.35.4):

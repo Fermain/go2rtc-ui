@@ -2,20 +2,16 @@
 	import '../app.css';
 	import { QueryClientProvider } from '@tanstack/svelte-query';
 	import { queryClient } from '$lib/queryClient';
-	import { theme } from '$lib/stores/theme';
-	import { onMount } from 'svelte';
 	import { Header } from '$lib/components/navigation';
+	import { ModeWatcher } from 'mode-watcher';
 
 	let { children, data } = $props();
 
 	// Version info from load function
 	let versionInfo = $state(data.appInfo);
-
-	onMount(() => {
-		theme.init();
-	});
 </script>
 
+<ModeWatcher />
 <QueryClientProvider client={queryClient}>
 	<div class="bg-background min-h-screen">
 		<Header version={versionInfo.version} configPath={versionInfo.config_path} />
