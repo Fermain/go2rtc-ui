@@ -9,9 +9,9 @@
 	} from '$lib/components/ui/table';
 	import { Button } from '$lib/components/ui/button';
 	import { Checkbox } from '$lib/components/ui/checkbox';
-	import { onMount } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 	import { browser } from '$app/environment';
-	import { useDeleteStreamMutation, useStreamsQuery } from '$lib/queries/streams.js';
+	import { useDeleteStreamMutation } from '$lib/queries/streams.js';
 
 	// Types for stream data
 	interface StreamProducer {
@@ -43,14 +43,11 @@
 		status: 'online' | 'offline';
 	}
 
-	// Streams query with auto-polling
-	const streamsQuery = useStreamsQuery(1000); // Poll every second like original
-
-	// Derived state from query
-	let streams = $derived($streamsQuery.data || []);
-	let isLoading = $derived($streamsQuery.isLoading);
-	let isRefreshing = $derived($streamsQuery.isFetching && !$streamsQuery.isLoading);
-	let error = $derived($streamsQuery.error?.message || null);
+	// Stream data state (restored original implementation)
+	let streams = $state<Stream[]>([]);
+	let isLoading = $state(false);
+	let isManualRefreshing = $state(false);
+	let error = $state<string | null>(null);
 
 	// Selection state
 	let selectedStreams = $state<Set<string>>(new Set());
@@ -136,13 +133,85 @@
 		}
 	}
 
-	async function manualRefresh() {
+	// Auto-refresh interval
+	let refreshInterval: number | undefined;
+	let refreshAttempts = 0;
+	const maxRefreshAttempts = 5;
+
+	async function refreshStreams(isManual = false) {
 		if (!browser) return;
-		await $streamsQuery.refetch();
+
+		// Set manual refresh state for better UX
+		if (isManual) {
+			isManualRefreshing = true;
+			error = null;
+			refreshAttempts = 0;
+		}
+
+		// Don't show loading for auto-refresh unless it's the first load
+		if (isManual || streams.length === 0) {
+			isLoading = true;
+		}
+
+		try {
+			const response = await fetch('/api/streams');
+			if (!response.ok) {
+				throw new Error(`HTTP error! status: ${response.status}`);
+			}
+
+			const data = await response.json();
+
+			// Transform the go2rtc response format to our internal format (original logic)
+			const transformedStreams: Stream[] = Object.entries(data).map(([name, info]) => {
+				const streamInfo = info as StreamInfo;
+				const hasProducers = streamInfo.producers && streamInfo.producers.length > 0;
+				const hasConsumers = streamInfo.consumers && streamInfo.consumers.length > 0;
+
+				return {
+					name,
+					info: {
+						producers: streamInfo.producers || [],
+						consumers: streamInfo.consumers || []
+					},
+					status: hasProducers ? 'online' : 'offline'
+				};
+			});
+
+			streams = transformedStreams;
+			refreshAttempts = 0; // Reset attempts on success
+
+			// Clear any previous error
+			if (error) {
+				error = null;
+			}
+		} catch (err) {
+			refreshAttempts++;
+			const errorMessage = err instanceof Error ? err.message : 'Failed to fetch streams';
+
+			// Only show error if manual refresh or if we've exceeded max attempts
+			if (isManual || refreshAttempts >= maxRefreshAttempts) {
+				error = errorMessage;
+			}
+
+			console.error('Error fetching streams:', err);
+		} finally {
+			isLoading = false;
+			if (isManual) {
+				isManualRefreshing = false;
+			}
+		}
+	}
+
+	async function manualRefresh() {
+		await refreshStreams(true);
 	}
 
 	onMount(() => {
 		detectPlatform();
+
+		// Start initial load and auto-refresh
+		refreshStreams();
+		refreshInterval = window.setInterval(refreshStreams, 1000);
 
 		// Keyboard shortcut handler for Cmd/Ctrl+R (manual refresh)
 		function handleKeydown(e: KeyboardEvent) {
@@ -158,6 +227,12 @@
 		return () => {
 			window.removeEventListener('keydown', handleKeydown);
 		};
+	});
+
+	onDestroy(() => {
+		if (refreshInterval) {
+			clearInterval(refreshInterval);
+		}
 	});
 </script>
 
@@ -195,12 +270,12 @@
 				size="sm"
 				variant="outline"
 				onclick={manualRefresh}
-				disabled={isRefreshing}
+				disabled={isManualRefreshing}
 				aria-label="Refresh streams (Keyboard shortcut: {modifierKey}+R)"
 				title="Refresh streams ({modifierKey}+R)"
 			>
 				<span class="flex items-center gap-2">
-					{isRefreshing ? 'Refreshing...' : 'Refresh'}
+					{isManualRefreshing ? 'Refreshing...' : 'Refresh'}
 					<kbd
 						class="bg-muted text-muted-foreground pointer-events-none inline-flex h-5 items-center gap-1 rounded border px-1.5 font-mono text-[10px] font-medium opacity-100 select-none"
 					>
