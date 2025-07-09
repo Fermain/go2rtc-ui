@@ -3,7 +3,7 @@ import { browser } from '$app/environment';
 import { goto } from '$app/navigation';
 
 // Simple action types we actually use
-export type ShortcutAction = 'refresh-streams' | 'add-stream' | 'save-config' | 'go-back';
+export type ShortcutAction = 'add-stream' | 'save-config' | 'go-back';
 
 // Platform-aware modifier key detection  
 export const modifierKey = writable<'⌘' | 'Ctrl'>('⌘');
@@ -76,17 +76,6 @@ export const globalShortcuts = [
 		key: 'Enter',
 		modifier: ['ctrl'],
 		callback: () => executeAction('save-config')
-	},
-	// Refresh - Cmd+Shift+R or Ctrl+Shift+R
-	{
-		key: 'r',
-		modifier: ['meta', 'shift'],
-		callback: () => executeAction('refresh-streams')
-	},
-	{
-		key: 'r',
-		modifier: ['ctrl', 'shift'],
-		callback: () => executeAction('refresh-streams')
 	}
 ];
 

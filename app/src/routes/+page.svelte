@@ -13,12 +13,10 @@
 	import { browser } from '$app/environment';
 	import { useDeleteStreamMutation } from '$lib/queries/streams.js';
 	import type { Stream, StreamInfo } from '$lib/services/api.js';
-	import { modifierKey } from '$lib/stores/shortcuts';
 
 	// Stream data state (working manual implementation)
 	let streams = $state<Stream[]>([]);
 	let isLoading = $state(false);
-	let isManualRefreshing = $state(false);
 	let error = $state<string | null>(null);
 
 	// Auto-refresh interval
@@ -100,18 +98,11 @@
 		}
 	}
 
-	async function refreshStreams(isManual = false) {
+	async function refreshStreams() {
 		if (!browser) return;
 
-		// Set manual refresh state for better UX
-		if (isManual) {
-			isManualRefreshing = true;
-			error = null;
-			refreshAttempts = 0;
-		}
-
 		// Don't show loading for auto-refresh unless it's the first load
-		if (isManual || streams.length === 0) {
+		if (streams.length === 0) {
 			isLoading = true;
 		}
 
@@ -150,22 +141,15 @@
 			refreshAttempts++;
 			const errorMessage = err instanceof Error ? err.message : 'Failed to fetch streams';
 
-			// Only show error if manual refresh or if we've exceeded max attempts
-			if (isManual || refreshAttempts >= maxRefreshAttempts) {
+			// Only show error if we've exceeded max attempts
+			if (refreshAttempts >= maxRefreshAttempts) {
 				error = errorMessage;
 			}
 
 			console.error('Error fetching streams:', err);
 		} finally {
 			isLoading = false;
-			if (isManual) {
-				isManualRefreshing = false;
-			}
 		}
-	}
-
-	async function manualRefresh() {
-		await refreshStreams(true);
 	}
 
 	onMount(() => {
@@ -210,28 +194,11 @@
 			{/if}
 		</div>
 
-		<div class="flex items-center gap-2">
-			<Button
-				size="sm"
-				variant="outline"
-				onclick={manualRefresh}
-				disabled={isManualRefreshing}
-				aria-label="Refresh streams (Keyboard shortcut: {$modifierKey}+Shift+R)"
-				title="Refresh streams ({$modifierKey}+Shift+R)"
-			>
-				<span class="flex items-center gap-2">
-					{isManualRefreshing ? 'Refreshing...' : 'Refresh'}
-					<kbd
-						class="bg-muted text-muted-foreground pointer-events-none inline-flex h-5 items-center gap-1 rounded border px-1.5 font-mono text-[10px] font-medium opacity-100 select-none"
-					>
-						<span class="text-xs">{$modifierKey}⇧R</span>
-					</kbd>
-				</span>
-			</Button>
-			{#if error}
+		{#if error}
+			<div class="flex items-center gap-2">
 				<span class="text-sm text-red-600">Connection error</span>
-			{/if}
-		</div>
+			</div>
+		{/if}
 	</div>
 
 	<div class="rounded-md border">
@@ -269,7 +236,7 @@
 							<div class="text-red-600">
 								<p class="font-medium">Error loading streams</p>
 								<p class="mt-1 text-sm">{error}</p>
-								<Button size="sm" variant="outline" class="mt-2" onclick={() => refreshStreams(true)}>
+								<Button size="sm" variant="outline" class="mt-2" onclick={() => refreshStreams()}>
 									Retry
 								</Button>
 							</div>
