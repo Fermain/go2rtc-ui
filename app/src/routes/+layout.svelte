@@ -10,13 +10,10 @@
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { Info, Sun, Moon } from 'lucide-svelte';
 
-	let { children } = $props();
+	let { children, data } = $props();
 
-	// Version info - loaded from API in production
-	let versionInfo = $state({
-		version: '1.9.4',
-		config_path: '/config/go2rtc.yaml'
-	});
+	// Version info from load function
+	let versionInfo = $state(data.appInfo);
 
 	// Platform-aware modifier key display
 	let modifierKey = $state('⌘');

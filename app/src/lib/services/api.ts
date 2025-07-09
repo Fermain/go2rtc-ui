@@ -117,7 +117,7 @@ async function apiFetch<T>(endpoint: string, options?: RequestInit): Promise<T> 
 // App Service
 export class AppService {
 	static async getAppInfo(): Promise<AppInfo> {
-		return apiFetch<AppInfo>('/');
+		return apiFetch<AppInfo>(''); // Remove the trailing slash - this becomes /api
 	}
 }
 
