@@ -15,6 +15,10 @@
 	let isLoading = $state(false);
 
 	// Form states
+	let tempStreamForm = $state({
+		name: '',
+		src: ''
+	});
 
 	let onvifForm = $state({
 		src: 'onvif://user:pass@192.168.1.123:80'
@@ -75,7 +79,8 @@
 	async function loadModuleData(module: string) {
 		isLoading = true;
 		try {
-			// TODO: Replace with actual API calls
+			// TODO: Replace with actual API calls to match original implementation
+			// Original endpoints: api/alsa, api/dvrip, api/ffmpeg/devices, etc.
 			// For now, simulate loading with dummy data
 			await new Promise((resolve) => setTimeout(resolve, 500));
 
@@ -301,6 +306,31 @@
 		}
 	}
 
+	async function submitTempStream() {
+		if (!tempStreamForm.name || !tempStreamForm.src) {
+			alert('Please fill in both name and URL');
+			return;
+		}
+
+		try {
+			// Create the API URL matching the original implementation
+			const url = new URL('/api/streams', window.location.origin);
+			url.searchParams.set('name', tempStreamForm.name);
+			url.searchParams.set('src', tempStreamForm.src);
+
+			const response = await fetch(url, { method: 'PUT' });
+			const result = response.ok
+				? 'Stream added successfully'
+				: 'ERROR: ' + (await response.text());
+			alert(result);
+
+			if (response.ok) {
+				tempStreamForm = { name: '', src: '' };
+			}
+		} catch (error) {
+			alert('Error creating stream: ' + error);
+		}
+	}
 
 	async function submitOnvifTest() {
 		if (!onvifForm.src) {
@@ -309,8 +339,18 @@
 		}
 
 		try {
-			// TODO: Replace with actual API call
-			loadModuleData('onvif');
+			// Match original implementation: send as URL parameter
+			const url = new URL('/api/onvif', window.location.origin);
+			url.searchParams.set('src', onvifForm.src);
+
+			const response = await fetch(url.toString());
+			if (response.ok) {
+				const data = await response.json();
+				// TODO: Process the response data and update onvifData
+				console.log('ONVIF test response:', data);
+			} else {
+				alert('Error testing ONVIF: ' + (await response.text()));
+			}
 		} catch (error) {
 			alert('Error testing ONVIF: ' + error);
 		}
@@ -323,10 +363,21 @@
 		}
 
 		try {
-			// TODO: Replace with actual API call
-			alert('HomeKit device paired successfully');
-			homeKitForm = { id: '', url: '', pin: '' };
-			loadModuleData('homekit');
+			// Match original implementation: append pin to url and send as FormData
+			const formData = new FormData();
+			formData.set('id', homeKitForm.id);
+			formData.set('url', homeKitForm.url + '&pin=' + homeKitForm.pin);
+
+			const response = await fetch('/api/homekit', { method: 'POST', body: formData });
+			const result = response.ok
+				? 'HomeKit device paired successfully'
+				: 'ERROR: ' + (await response.text());
+			alert(result);
+
+			if (response.ok) {
+				homeKitForm = { id: '', url: '', pin: '' };
+				loadModuleData('homekit');
+			}
 		} catch (error) {
 			alert('Error pairing HomeKit: ' + error);
 		}
@@ -339,10 +390,20 @@
 		}
 
 		try {
-			// TODO: Replace with actual API call
-			alert('HomeKit device unpaired successfully');
-			homeKitUnpairForm = { id: '' };
-			loadModuleData('homekit');
+			// Match original implementation: send as FormData with DELETE method
+			const formData = new FormData();
+			formData.set('id', homeKitUnpairForm.id);
+
+			const response = await fetch('/api/homekit', { method: 'DELETE', body: formData });
+			const result = response.ok
+				? 'HomeKit device unpaired successfully'
+				: 'ERROR: ' + (await response.text());
+			alert(result);
+
+			if (response.ok) {
+				homeKitUnpairForm = { id: '' };
+				loadModuleData('homekit');
+			}
 		} catch (error) {
 			alert('Error unpairing HomeKit: ' + error);
 		}
@@ -374,7 +435,30 @@
 		}
 
 		try {
-			// TODO: Replace with actual API call
+			// Match original implementation: send as URL parameters
+			const query = new URLSearchParams();
+			query.set('email', ringCredentialsForm.email);
+			query.set('password', ringCredentialsForm.password);
+			if (ringCredentialsForm.code) {
+				query.set('code', ringCredentialsForm.code);
+			}
+
+			const url = new URL('/api/ring?' + query.toString(), window.location.origin);
+			const response = await fetch(url, { cache: 'no-cache' });
+			const data = await response.json();
+
+			if (data.needs_2fa) {
+				alert(data.prompt || 'Enter 2FA code and submit again');
+				return;
+			}
+
+			if (!response.ok) {
+				alert('Error: ' + (data.error || 'Unknown error'));
+				return;
+			}
+
+			// TODO: Process the response data and update ringData
+			console.log('Ring login response:', data);
 			loadModuleData('ring');
 		} catch (error) {
 			alert('Error logging into Ring: ' + error);
@@ -416,6 +500,33 @@
 
 <div class="space-y-6">
 	<Accordion.Root type="single">
+		<!-- Temporary Stream -->
+		<Accordion.Item value="stream">
+			<Accordion.Trigger>Temporary Stream</Accordion.Trigger>
+			<Accordion.Content>
+				<div class="flex gap-4">
+					<div class="flex-1">
+						<Input
+							type="text"
+							placeholder="name"
+							bind:value={tempStreamForm.name}
+							required
+							minlength={1}
+							maxlength={50}
+						/>
+					</div>
+					<div class="flex-1">
+						<Input
+							type="url"
+							placeholder="rtsp://user:pass@host:port/path"
+							bind:value={tempStreamForm.src}
+							required
+						/>
+					</div>
+					<Button onclick={submitTempStream}>add</Button>
+				</div>
+			</Accordion.Content>
+		</Accordion.Item>
 
 		<!-- ALSA -->
 		<Accordion.Item value="alsa">
@@ -462,9 +573,31 @@
 			<Accordion.Content>
 				<div class="space-y-4">
 					<div class="flex gap-4">
-						<Input type="text" placeholder="stream id" bind:value={homeKitForm.id} class="w-48" />
-						<Input type="text" placeholder="url" bind:value={homeKitForm.url} class="w-80" />
-						<Input type="text" placeholder="pin" bind:value={homeKitForm.pin} class="w-24" />
+						<Input
+							type="text"
+							placeholder="stream id"
+							bind:value={homeKitForm.id}
+							class="w-48"
+							required
+							minlength={1}
+							maxlength={50}
+						/>
+						<Input
+							type="url"
+							placeholder="http://192.168.1.100:8080"
+							bind:value={homeKitForm.url}
+							class="w-80"
+							required
+						/>
+						<Input
+							type="text"
+							placeholder="pin"
+							bind:value={homeKitForm.pin}
+							class="w-24"
+							required
+							pattern="[0-9]{3}-[0-9]{2}-[0-9]{3}"
+							title="Format: 123-45-678"
+						/>
 						<Button onclick={submitHomeKitPair}>Pair</Button>
 					</div>
 
@@ -474,6 +607,9 @@
 							placeholder="stream id"
 							bind:value={homeKitUnpairForm.id}
 							class="w-48"
+							required
+							minlength={1}
+							maxlength={50}
 						/>
 						<Button onclick={submitHomeKitUnpair}>Unpair</Button>
 					</div>
@@ -558,10 +694,13 @@
 				<div class="space-y-4">
 					<div class="flex gap-4">
 						<Input
-							type="text"
+							type="url"
 							placeholder="onvif://user:pass@192.168.1.123:80"
 							bind:value={onvifForm.src}
 							class="flex-1"
+							required
+							pattern="onvif://.*"
+							title="Must start with onvif://"
 						/>
 						<Button onclick={submitOnvifTest}>test</Button>
 					</div>
@@ -604,10 +743,34 @@
 			<Accordion.Content>
 				<div class="space-y-4">
 					<div class="flex gap-4">
-						<Input type="text" placeholder="client_id" bind:value={nestForm.client_id} />
-						<Input type="text" placeholder="client_secret" bind:value={nestForm.client_secret} />
-						<Input type="text" placeholder="refresh_token" bind:value={nestForm.refresh_token} />
-						<Input type="text" placeholder="project_id" bind:value={nestForm.project_id} />
+						<Input
+							type="text"
+							placeholder="client_id"
+							bind:value={nestForm.client_id}
+							required
+							minlength={10}
+						/>
+						<Input
+							type="password"
+							placeholder="client_secret"
+							bind:value={nestForm.client_secret}
+							required
+							minlength={10}
+						/>
+						<Input
+							type="text"
+							placeholder="refresh_token"
+							bind:value={nestForm.refresh_token}
+							required
+							minlength={10}
+						/>
+						<Input
+							type="text"
+							placeholder="project_id"
+							bind:value={nestForm.project_id}
+							required
+							minlength={5}
+						/>
 						<Button onclick={submitNest}>Login</Button>
 					</div>
 
@@ -647,13 +810,26 @@
 			<Accordion.Content>
 				<div class="space-y-4">
 					<div class="flex gap-4">
-						<Input type="email" placeholder="email" bind:value={ringCredentialsForm.email} />
+						<Input
+							type="email"
+							placeholder="email"
+							bind:value={ringCredentialsForm.email}
+							required
+						/>
 						<Input
 							type="password"
 							placeholder="password"
 							bind:value={ringCredentialsForm.password}
+							required
+							minlength={6}
 						/>
-						<Input type="text" placeholder="2FA code" bind:value={ringCredentialsForm.code} />
+						<Input
+							type="text"
+							placeholder="2FA code (optional)"
+							bind:value={ringCredentialsForm.code}
+							pattern="[0-9]{6}"
+							title="6-digit code"
+						/>
 						<Button onclick={submitRingCredentials}>Login</Button>
 					</div>
 
@@ -663,6 +839,8 @@
 							placeholder="refresh_token"
 							bind:value={ringTokenForm.refresh_token}
 							class="flex-1"
+							required
+							minlength={20}
 						/>
 						<Button onclick={submitRingToken}>Login</Button>
 					</div>
@@ -705,8 +883,20 @@
 			<Accordion.Content>
 				<div class="space-y-4">
 					<div class="flex gap-4">
-						<Input type="text" placeholder="username" bind:value={roborockForm.username} />
-						<Input type="password" placeholder="password" bind:value={roborockForm.password} />
+						<Input
+							type="text"
+							placeholder="username"
+							bind:value={roborockForm.username}
+							required
+							minlength={3}
+						/>
+						<Input
+							type="password"
+							placeholder="password"
+							bind:value={roborockForm.password}
+							required
+							minlength={6}
+						/>
 						<Button onclick={submitRoborock}>Login</Button>
 					</div>
 
