@@ -1,17 +1,18 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import * as m from '$lib/paraglide/messages';
 
 	interface NavigationLink {
 		href: string;
-		label: string;
+		labelKey: () => string;
 	}
 
 	const navigationLinks: NavigationLink[] = [
-		{ href: '/', label: 'Streams' },
-		{ href: '/add', label: 'Add' },
-		{ href: '/config', label: 'Config' },
-		{ href: '/logs', label: 'Logs' },
-		{ href: '/network', label: 'Net' }
+		{ href: '/', labelKey: m.nav_streams },
+		{ href: '/add', labelKey: m.nav_add },
+		{ href: '/config', labelKey: m.nav_config },
+		{ href: '/logs', labelKey: m.nav_logs },
+		{ href: '/network', labelKey: m.nav_network }
 	];
 
 	function getLinkClasses(href: string): string {
@@ -25,7 +26,7 @@
 </script>
 
 <div class="flex items-center gap-6">
-	<span class="text-xl font-semibold">go2rtc</span>
+	<span class="text-xl font-semibold">{m.app_title()}</span>
 	<nav class="flex gap-4" aria-label="Main navigation">
 		{#each navigationLinks as link}
 			<a
@@ -33,7 +34,7 @@
 				class={getLinkClasses(link.href)}
 				aria-current={page.url.pathname === link.href ? 'page' : undefined}
 			>
-				{link.label}
+				{link.labelKey()}
 			</a>
 		{/each}
 	</nav>

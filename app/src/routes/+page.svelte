@@ -13,6 +13,7 @@
 	import { browser } from '$app/environment';
 	import { useDeleteStreamMutation } from '$lib/queries/streams.js';
 	import type { Stream, StreamInfo } from '$lib/services/api.js';
+	import * as m from '$lib/paraglide/messages';
 
 	// Stream data state (working manual implementation)
 	let streams = $state<Stream[]>([]);
@@ -196,7 +197,7 @@
 
 		{#if error}
 			<div class="flex items-center gap-2">
-				<span class="text-sm text-red-600">Connection error</span>
+				<span class="text-sm text-red-600">{m.streams_connection_error()}</span>
 			</div>
 		{/if}
 	</div>
@@ -210,12 +211,12 @@
 							checked={isAllSelected}
 							indeterminate={isPartiallySelected}
 							onCheckedChange={toggleAllSelection}
-							aria-label="Select all"
+							aria-label={m.streams_select_all()}
 						/>
 					</TableHead>
-					<TableHead>Name</TableHead>
-					<TableHead>Online</TableHead>
-					<TableHead>Commands</TableHead>
+					<TableHead>{m.streams_name()}</TableHead>
+					<TableHead>{m.streams_online()}</TableHead>
+					<TableHead>{m.streams_commands()}</TableHead>
 				</TableRow>
 			</TableHeader>
 			<TableBody>
@@ -226,7 +227,7 @@
 								<div
 									class="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600"
 								></div>
-								Loading streams...
+								{m.streams_loading()}
 							</div>
 						</TableCell>
 					</TableRow>
@@ -234,10 +235,10 @@
 					<TableRow>
 						<TableCell colspan={4} class="py-8 text-center">
 							<div class="text-red-600">
-								<p class="font-medium">Error loading streams</p>
+								<p class="font-medium">{m.common_error()}</p>
 								<p class="mt-1 text-sm">{error}</p>
 								<Button size="sm" variant="outline" class="mt-2" onclick={() => refreshStreams()}>
-									Retry
+									{m.common_retry()}
 								</Button>
 							</div>
 						</TableCell>
@@ -245,7 +246,7 @@
 				{:else if streams.length === 0}
 					<TableRow>
 						<TableCell colspan={4} class="text-muted-foreground py-8 text-center">
-							No streams configured
+							{m.streams_no_streams()}
 						</TableCell>
 					</TableRow>
 				{:else}

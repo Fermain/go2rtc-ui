@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { NavigationMenu, AddStreamButton, InfoMenu, ThemeToggle } from '$lib/components/navigation';
+	import { NavigationMenu, AddStreamButton, InfoMenu, ThemeToggle, LanguageSwitcher } from '$lib/components/navigation';
 
 	interface Props {
 		version: string;
@@ -19,6 +19,9 @@
 				<div class="flex items-center gap-3">
 					<!-- Add Stream Button with keyboard shortcut -->
 					<AddStreamButton />
+
+					<!-- Language Switcher -->
+					<LanguageSwitcher />
 
 					<!-- Version Info Dropdown -->
 					<InfoMenu {version} {configPath} />

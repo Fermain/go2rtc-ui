@@ -2,6 +2,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { goto } from '$app/navigation';
 	import { modifierKey } from '$lib/stores/shortcuts';
+	import * as m from '$lib/paraglide/messages';
 
 	function handleAddStream() {
 		goto('/add');
@@ -13,11 +14,11 @@
 	variant="outline"
 	size="sm"
 	onclick={handleAddStream}
-	aria-label="Add Stream (Keyboard shortcut: {$modifierKey}+K)"
-	title="Add Stream ({$modifierKey}+K)"
+	aria-label="{m.header_add_stream()} (Keyboard shortcut: {$modifierKey}+K)"
+	title="{m.header_add_stream()} ({$modifierKey}+K)"
 >
 	<span class="flex items-center gap-2">
-		Add Stream
+		{m.header_add_stream()}
 		<kbd
 			class="bg-muted text-muted-foreground pointer-events-none inline-flex h-5 items-center gap-1 rounded border px-1.5 font-mono text-[10px] font-medium opacity-100 select-none"
 		>
